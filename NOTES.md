@@ -22,27 +22,27 @@ via woocomerce REST API for conda.ch.
 - for all projects update changed properties.
 
 ## Project properties to send
-name -> parse
-image -> parse
-tags -> try to parse on website (default: ... )
-type -> 'crowdfunding'
-categories -> manual
-images (list) -> Over Wordpress Rest API upload and get URL
-meta_data (list) -> 
+- name -> parse
+- image -> parse
+- tags -> try to parse on website (default: ... )
+- type -> 'crowdfunding'
+- categories -> manual
+- images (list) -> Over Wordpress Rest API upload and get URL
+- meta_data (list) -> 
                  id: ... ,
                  key: krowd_project_link,
                  value: external project URL
 
 ## Per Project on rockets.
-Title
-Categories
-Minimum Funding
-Remaining Time
+- Title
+- Categories
+- Minimum Funding
+- Remaining Time
 
 # Websites
-https://www.biovision.ch/alle-projekte/
-https://www.conda.ch/projekte-entdecken/
-Website: rockets.investments
-Min Funding Target: 250 Euro? or project specific?
+- https://www.biovision.ch/alle-projekte/
+- https://www.conda.ch/projekte-entdecken/
+- [Website: rockets.investments
+](https://rockets.investments/) Min Funding Target: 250 Euro? or project specific?
 
 
