@@ -1,4 +1,4 @@
 while true; do
     python test.py
-    sleep 15;
+    sleep $1;
 done 
