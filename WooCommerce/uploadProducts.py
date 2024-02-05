@@ -7,8 +7,8 @@ import pandas as pd
 
 wcapi = API(
     url="https://www.ecoventure.ch", 
-    consumer_key="ck_9539d0a0516b8cd571ac68d7f14ee3db46cb4178", 
-    consumer_secret="cs_b9a5f3b80f6f04b1bb7f00ef5613af5120ed56fe", 
+    consumer_key="", 
+    consumer_secret="", 
     wp_api=True,  
     version="wc/v3" 
 )
