@@ -7,6 +7,11 @@ from helperFunctions import downloadImage
 from helperFunctions import imageToBinary
 from helperFunctions import uploadImageAPI
 
+# current working directory of this file
+current_directory = os.getcwd()
+keyPath = os.path.join(current_directory, "keys.csv") # Create the full path to the CSV file
+keys = pd.read_csv(keyPath)
+
 # Load the generated ID 
 current_directory = os.getcwd() # Get the current working directory
 csv_file_name = "conda.csv" # Specify the CSV file name
@@ -31,7 +36,7 @@ for index, row in df.iterrows():
         # indicate path and upload image to wordpress using API
         fileName = os.path.basename(fileName)
         uploadImage, ImageID = uploadImageAPI(image_binary=imageBinary, username="admin", 
-                                     password="", fileName=fileName) ## add password (Action password, not normal admin password)
+                                     password=keys.iloc[2,1], fileName=fileName) ## add password (Action password, not normal admin password)
         
         # add url and id to DataFrame
         df.at[index, 'wpImageLink'] = uploadImage
