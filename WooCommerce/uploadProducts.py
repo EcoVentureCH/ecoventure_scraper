@@ -6,9 +6,9 @@ import subprocess
 import pandas as pd
 
 wcapi = API(
-    url="https://www.ecoventure.ch", 
-    consumer_key="", 
-    consumer_secret="", 
+    url="https://www.ecoventure.ch",  
+    consumer_key="", ### ADD API KEY
+    consumer_secret="", ### ADD API SECRET
     wp_api=True,  
     version="wc/v3" 
 )
@@ -22,36 +22,43 @@ csv_file_name = "conda.csv" # Specify the CSV file name
 csv_file_path = os.path.join(current_directory, csv_file_name) # Create the full path to the CSV file
 df = pd.read_csv(csv_file_path) # Read the CSV file into a DataFrame
 
-# add ID column
-df["id"] = None
+# Check if column "id" exists
+if 'id' not in df.columns:
+    # If it doesn't exist, create a new column with no entries
+    df['id'] = None
 
-# update the generated csv file with the Product ID (if there is already an existing entry)
-...
-
-# select rows where ID is NULL (= new products)
-newProducts = df[df["id"].isnull()]
-
-## FOR TESTING - only keep first row
-#newProducts = newProducts.head(1)
-
-for index, row in newProducts.iterrows():
-    # Access values of each column for the current row
-    data = {
-    "name": row[" name"],
-    "meta_data": [
-        {
-        "key": "krowd_project_link",
-        "value" : row["# external_link"]
+# loop through rows
+for index, row in df.iterrows():
+    if pd.isnull(row['id']):
+        # Access values of each column for the current row
+        data = {
+        "name": row[" name"],
+        "meta_data": [
+            {
+            "key": "krowd_project_link",
+            "value" : row["# external_link"]
+            }
+        ],
+        "type": "crowdfunding",
+        "published": 1,
+        "images": [
+            {"src": row["wpImageLink"],
+             "id": row["wpImageID"]}
+        ]
         }
-    ],
-    "type": "crowdfunding",
-    "published": 1
-    }
-    # upload 
-    result = wcapi.post("products", data)
-    result = result.json()
-    print(result['id'])
 
+        # upload 
+        result = wcapi.post("products", data)
+        result = result.json()
+        
+        # add ID to newProducts object
+        df.at[index, 'id'] = result['id']
+        print(f"INFO: new entry created. ID: {result['id']}")
+    else:
+        print("INFO: entry already exists")
+
+# save updated csv file
+df.to_csv(csv_file_path, index=False)
 
 
 
