@@ -31,6 +31,7 @@ df = pd.read_csv(csv_file_path) # Read the CSV file into a DataFrame
 if 'id' not in df.columns:
     # If it doesn't exist, create a new column with no entries
     df['id'] = None
+    df['published'] = None
 
 # loop through rows
 for index, row in df.iterrows():
@@ -62,6 +63,7 @@ for index, row in df.iterrows():
         
         # add ID to newProducts object
         df.at[index, 'id'] = result['id']
+        df.at[index, 'published'] = 1
         print(f"INFO: new entry created. ID: {result['id']}")
     else:
         print("INFO: entry already exists")
