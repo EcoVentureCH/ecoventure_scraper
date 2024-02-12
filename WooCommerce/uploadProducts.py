@@ -41,7 +41,7 @@ for index, row in df.iterrows():
         "meta_data": [
             {
             "key": "wpneo_funding_minimum_price",
-            "value": row[" min_investment"]
+            "value": row["min_investment"]
             },
             {
             "key": "krowd_project_link",
