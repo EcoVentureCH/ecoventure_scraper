@@ -28,7 +28,7 @@ if 'wpImageLink' not in df.columns:
 for index, row in df.iterrows():
     if pd.isnull(row['wpImageLink']):
         # download the image from the link
-        curImage,fileName = downloadImage(row[" image"], row["external_link"])
+        curImage,fileName = downloadImage(row["image"], row["external_link"])
         
         # Convert PIL image object to binary data
         imageBinary = imageToBinary(curImage)
