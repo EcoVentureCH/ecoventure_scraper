@@ -28,6 +28,11 @@ csv_file_name = "conda.csv" # Specify the CSV file name
 csv_file_path = os.path.join(current_directory, csv_file_name) # Create the full path to the CSV file
 df = pd.read_csv(csv_file_path)
 
+# Check if column "id" exists
+if 'lastUpdate' not in df.columns:
+    # If it doesn't exist, create a new column with no entries
+    df['lastUpdate'] = None
+
 # loop through rows
 for index, row in df.iterrows():
     if not pd.isnull(row['id']) and row["published"] == 1: # only create product if there is no ID yet
