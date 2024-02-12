@@ -1,6 +1,7 @@
 '''
 test scraper for scraping active projects on www.conda.ch
 '''
+import os
 import time
 import re
 from selenium import webdriver
@@ -11,6 +12,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.common import exceptions
+import pandas as pd
 
 
 CSV_FNAME = 'conda.csv'
@@ -24,23 +26,34 @@ ATTRIBUTE_CSS_SELECTORS = {
     'image': ('meta[property="og:image"]', 'content'),
     'min_investment': ('p.min-investment', re.compile(r'(?:\d*\.)?\d+')),
 }
+UPDATABLE = list(ATTRIBUTE_CSS_SELECTORS.keys())
+UPDATABLE.remove('external_link')
 
 
-def update_csv(attributes_list):
-    
+
+def update_csv(project_list):
     print(f'INFO: writing entries to {CSV_FNAME}')
-    with open(CSV_FNAME, 'w') as f:
-        f.write('# ')
-        for attr_name in attributes_list[0].keys():
-            f.write(attr_name + ', ')
-        f.write('\n')
+    
+    if os.path.exists(CSV_FNAME):
+        df = pd.read_csv(CSV_FNAME)
+    else:
+        df = pd.DataFrame()
+        for attributes in project_list:
+            df = pd.concat([df, pd.DataFrame([attributes])], ignore_index=True)
 
-        for attributes in attributes_list:
-            for value in attributes.values():
-                if value is None:
-                    value = ''
-                f.write(value + ', ')
-            f.write('\n')
+    links = df['external_link']
+    for attributes in project_list:
+        if attributes['external_link'] in links:
+            # update attributes
+            rows = df.loc[df['external_link'] == attributes['external_link']]
+            assert(len(rows)==1)
+            row = rows[0]
+            for att in UPDATABLE:
+                row[att] = attributes[att]
+        else:
+            df = pd.concat([df, pd.DataFrame([attributes])], ignore_index=True)
+
+    df.to_csv(CSV_FNAME)    
 
 def read_projects_conda(driver, url='https://www.conda.ch/projekte-entdecken/'):
     driver.get(url)
@@ -70,7 +83,7 @@ def read_projects_conda(driver, url='https://www.conda.ch/projekte-entdecken/'):
     )
 
 
-    attributes_list = []
+    project_list = []
     for elem in campaign_elements:
         buttons = elem.find_elements(By.CLASS_NAME, 'i-btn')
         buttons_green = elem.find_elements(By.CSS_SELECTOR, 'a.i-btn:not(.i-btn-gray)')
@@ -105,9 +118,9 @@ def read_projects_conda(driver, url='https://www.conda.ch/projekte-entdecken/'):
             
             driver.close()
             driver.switch_to.window(driver.window_handles[0])
-            attributes_list.append(attributes)
+            project_list.append(attributes)
             print(attributes)
-    update_csv(attributes_list)
+    update_csv(project_list)
 
 
 # setup chrome driver
