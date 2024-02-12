@@ -26,10 +26,9 @@ ATTRIBUTE_CSS_SELECTORS = {
     'image': ('meta[property="og:image"]', 'content'),
     'min_investment': ('p.min-investment', re.compile(r'(?:\d*\.)?\d+')),
 }
+
 UPDATABLE = list(ATTRIBUTE_CSS_SELECTORS.keys())
 UPDATABLE.remove('external_link')
-
-
 
 def update_csv(project_list):
     print(f'INFO: writing entries to {CSV_FNAME}')
@@ -43,17 +42,16 @@ def update_csv(project_list):
 
     links = df['external_link']
     for attributes in project_list:
-        if attributes['external_link'] in links:
+        if attributes['external_link'] in links.values:
             # update attributes
             rows = df.loc[df['external_link'] == attributes['external_link']]
             assert(len(rows)==1)
-            row = rows[0]
-            for att in UPDATABLE:
-                row[att] = attributes[att]
+            for key in UPDATABLE:
+                df.loc[df['external_link'] == attributes['external_link'], key] = attributes[key]
         else:
             df = pd.concat([df, pd.DataFrame([attributes])], ignore_index=True)
 
-    df.to_csv(CSV_FNAME)    
+    df.to_csv(CSV_FNAME, index=False)    
 
 def read_projects_conda(driver, url='https://www.conda.ch/projekte-entdecken/'):
     driver.get(url)
