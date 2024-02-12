@@ -35,7 +35,7 @@ for index, row in df.iterrows():
 
         # indicate path and upload image to wordpress using API
         fileName = os.path.basename(fileName)
-        uploadImage, ImageID = uploadImageAPI(image_binary=imageBinary, username="admin", 
+        uploadImage, ImageID = uploadImageAPI(image_binary=imageBinary, username=keys.iloc[2,1], 
                                      password=keys.iloc[2,1], fileName=fileName) ## add password (Action password, not normal admin password)
         
         # add url and id to DataFrame
