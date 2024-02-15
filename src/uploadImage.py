@@ -24,6 +24,8 @@ def upload_images():
     # download the image and upload to wordpress
     for index, row in df.iterrows():
         if pd.isnull(row['wpImageLink']):
+
+ 
             # download the image from the link
             curImage, fileName = downloadImage(row["image"], row["external_link"])
             
@@ -45,6 +47,9 @@ def upload_images():
                 print("Uploaded image URL:", uploadImage)
             else:
                 print("Failed to upload image.")
+        else:
+            print("Already got Image with {}".format(row['wpImageID']))
+ 
 
     # save updated csv file
     df.to_csv(csv_file_path, index=False)

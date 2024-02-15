@@ -32,7 +32,7 @@ def upload_products():
         df['id'] = None
 
     if 'published' not in df.columns:
-        df['published'] = None
+        df['published'] = 1.0
 
     if 'lastUpdate' not in df.columns:
         df['lastUpdate'] = None
@@ -67,7 +67,6 @@ def upload_products():
             
             # add ID to newProducts object
             df.at[index, 'id'] = result['id']
-            df.at[index, 'published'] = 1
             print(f"INFO: new entry created. ID: {result['id']}")
         else:
             print("INFO: entry already exists")

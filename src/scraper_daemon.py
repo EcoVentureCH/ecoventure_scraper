@@ -78,7 +78,6 @@ def restart_daemon(seconds=1):
     time.sleep(2.2)
     process.join()
 
-
 def stop_daemon():
     if not os.path.exists(DAEMON_STATE_FILE):
         print_c(f"INFO: daeomon not running")
@@ -95,6 +94,24 @@ def stop_daemon():
         pass
 
     os.remove(DAEMON_STATE_FILE)
+
+def get_pid():
+
+    def check_pid(pid):        
+        """ Check For the existence of a unix pid. """
+        try:
+            os.kill(pid, 0)
+        except OSError:
+            return False
+        else:
+            return True
+        
+    if os.path.exists(DAEMON_STATE_FILE):
+        with open(DAEMON_STATE_FILE, 'r') as f:
+            pid = int(f.read())
+        if check_pid(pid):
+            return pid
+    return -1
 
 
 
