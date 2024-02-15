@@ -3,7 +3,7 @@ import pandas as pd
 from src.helperFunctions import downloadImage
 from src.helperFunctions import imageToBinary
 from src.helperFunctions import uploadImageAPI
-from utils import print_flushed as print
+from src.utils import print_flushed as print
 
 
 current_directory = os.getcwd()

@@ -2,7 +2,7 @@ from woocommerce import API
 import os
 import pandas as pd
 from datetime import datetime
-from utils import print_flushed as print
+from src.utils import print_flushed as print
 
 
 def update_products():
@@ -24,11 +24,17 @@ def update_products():
     csv_file_name = "conda.csv" # Specify the CSV file name
     csv_file_path = os.path.join(current_directory, csv_file_name) # Create the full path to the CSV file
     df = pd.read_csv(csv_file_path)
-
+    
     # Check if column "id" exists
+    if 'id' not in df.columns:
+        df['id'] = None
+
+    if 'published' not in df.columns:
+        df['published'] = None
+
     if 'lastUpdate' not in df.columns:
-        # If it doesn't exist, create a new column with no entries
         df['lastUpdate'] = None
+
 
     # loop through rows
     for index, row in df.iterrows():

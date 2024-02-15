@@ -3,7 +3,6 @@ test scraper for scraping active projects on www.conda.ch
 '''
 import sys
 import os
-import signal
 import time
 import re
 from selenium import webdriver
@@ -15,8 +14,8 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.common import exceptions
 import pandas as pd
-from utils import print_flushed as print
-from utils import print_with_color as print_c
+from src.utils import print_flushed as print
+from src.utils import print_with_color as print_c
 
 
 URL = 'https://www.conda.ch/projekte-entdecken/'
@@ -78,6 +77,7 @@ def read_projects_conda(driver, url=URL):
         except:
             break
         driver.execute_script("arguments[0].scrollIntoView();", element)
+
         element.click()
         print('.', end='')
     print()
@@ -144,7 +144,7 @@ class scraper_start:
         chrome_options.add_argument("--start-maximized")
         chrome_options.add_argument('--headless')
         chrome_options.add_argument('--no-sandbox')
-        chrome_options.add_argument('--disable-dev-shm-usage')
+        #chrome_options.add_argument('--disable-dev-shm-usage')
         self.crome_options = chrome_options
         self.log_out = log_out
         

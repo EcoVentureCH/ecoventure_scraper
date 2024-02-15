@@ -3,8 +3,8 @@ import signal
 import sys
 import time
 import os
-from utils import print_with_color as print_c
 
+from src.utils import print_with_color as print_c
 from src.scraper_conda_ch import URL, scraper_start
 from src.updateProducts import update_products
 from src.uploadProducts import upload_products, WEBSITE
@@ -37,13 +37,13 @@ def scrape_and_upload(seconds):
             start_time_upload = time.time()
 
             try:
-                print_c("INFO: start uploading images")
-                upload_images()
-                print_c("INFO: staty uploading projects")
-                upload_products()
                 print_c("INFO: start udpating products")
                 update_products()
-            except Exception as e:
+                print_c("INFO: start uploading images")
+                upload_images()
+                print_c("INFO: start uploading projects")
+                upload_products()
+            except FileNotFoundError as e:
                 print(e)
                 print_c(f"WARNING: couldn't upload to {WEBSITE}")
             else:

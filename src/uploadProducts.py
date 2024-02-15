@@ -1,10 +1,10 @@
 from woocommerce import API
 import os
 import pandas as pd
-from utils import print_flushed as print
+from src.utils import print_flushed as print
 
 
-WEBSITE="https://www.ecoventure.ch",  
+WEBSITE="https://www.ecoventure.ch"
 
 # current working directory of this file
 current_directory = os.getcwd()
@@ -18,9 +18,9 @@ csv_file_path = os.path.join(current_directory, csv_file_name) # Create the full
 def upload_products():
 
     wcapi = API(
-        url=WEBSITE,  
-        consumer_key = keys.iloc[0, 1], 
-        consumer_secret = keys.iloc[1, 1], 
+        url=WEBSITE,
+        consumer_key = str(keys.iloc[0, 1]), 
+        consumer_secret = str(keys.iloc[1, 1]), 
         wp_api=True,  
         version="wc/v3" 
     )
@@ -29,9 +29,13 @@ def upload_products():
 
     # Check if column "id" exists
     if 'id' not in df.columns:
-        # If it doesn't exist, create a new column with no entries
         df['id'] = None
+
+    if 'published' not in df.columns:
         df['published'] = None
+
+    if 'lastUpdate' not in df.columns:
+        df['lastUpdate'] = None
 
     # loop through rows
     for index, row in df.iterrows():

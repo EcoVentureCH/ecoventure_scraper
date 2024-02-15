@@ -4,3 +4,4 @@ __pycache__
 conda.csv
 keys.csv
 log.txt
+.daemon_state

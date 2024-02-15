@@ -2,7 +2,7 @@
 import sys
 from sys import exit
 import src.scraper_daemon as scraper_daemon
-from utils import print_with_color as print
+from src.utils import print_with_color as print
 
 '''daemon interaction'''
 
