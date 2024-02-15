@@ -20,15 +20,15 @@ program_name, args = shift(args)
 
 def print_usage():
     print( "Usage:")
-    print(f"  {program_name} Command [Args]")
+    print(f"  {program_name} Command [ARG]")
     print()
     print( "Commands:")
-    print( "  start [seconds]    - starts and runs the scraper every [seconds] seconds")
-    print( "  stops              - tops the scraper")
-    print( "  check-new          - check if any new projects are available")
-    print( "  list-projects      - lists all projects and their active state and an id")
-    print( "  add-poject [id]    - add the project as active on website")
-    print( "  remove-poject [id] - add the project as active on website")
+    print( "  start SECONDS    - starts and runs the scraper every [seconds] seconds")
+    print( "  stops            - tops the scraper")
+    print( "  check-new        - check if any new projects are available")
+    print( "  list-projects    - lists all projects and their active state and an id")
+    print( "  add-poject ID    - mark the project as active   and add on website")
+    print( "  remove-poject ID - mark the project as inactive and remove on website")
     print()
 
 def start(seconds):
@@ -49,11 +49,13 @@ def add_project(id):
 def remove_project(id):
     raise NotImplementedError
 
+
+ids = [0, 1, 2, 3]
+
+
 if len(args) == 0:
     print_usage()
     print( "ERROR: No Command was provided")
-
-
 
 elif 3 > len(args) > 0:
     command, args = shift(args)
@@ -71,6 +73,47 @@ elif 3 > len(args) > 0:
             print("ERROR: seconds needs to be an integer")
             exit(1)
         start(seconds)
+
+    elif command == "stop":
+        stop()
+    
+    elif command == "check-new":
+        check_new()
+
+    elif command == "list-projects":
+        list_projects()
+
+    elif command == "add-project":
+        if len(args) == 0:
+            print_usage()
+            print("ERROR: ID was not provided for start Command")
+            exit(1)
+        id, _ = shift(args)
+        try:
+            id = int(id)
+        except ValueError:
+            print_usage()
+            print("ERROR: ID needs to be an integer")
+            exit(1)
+
+        if id not in ids:
+            if len(ids) > 0:
+                print( "Hint: call first list-projects")
+                print(f"   {program_name} list-projects")
+                print( "Available ids:")
+                print(f"  {ids}")
+                print( "ERROR: ID not in ids list")
+
+            else:
+                print( "Hint: call first:")
+                print(f"   {program_name} start SECONDS")
+                print( "ERROR: no projects found")
+            exit(1)
+        
+        add_project()
+
+    elif command == "remove-project":
+        remove_project()
 
     else:
         print_usage()
