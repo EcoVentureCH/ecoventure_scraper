@@ -13,8 +13,11 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.common import exceptions
 import pandas as pd
+from utils import print_flushed as print
+from utils import print_with_color as print_c
 
 
+URL = 'https://www.conda.ch/projekte-entdecken/'
 CSV_FNAME = 'conda.csv'
 ATTRIBUTE_TIMEOUT = 3
 
@@ -31,7 +34,7 @@ UPDATABLE = list(ATTRIBUTE_CSS_SELECTORS.keys())
 UPDATABLE.remove('external_link')
 
 def update_csv(project_list):
-    print(f'INFO: writing entries to {CSV_FNAME}')
+    print_c(f'INFO: writing entries to {CSV_FNAME}')
     
     if os.path.exists(CSV_FNAME):
         df = pd.read_csv(CSV_FNAME)
@@ -53,7 +56,7 @@ def update_csv(project_list):
 
     df.to_csv(CSV_FNAME, index=False)    
 
-def read_projects_conda(driver, url='https://www.conda.ch/projekte-entdecken/'):
+def read_projects_conda(driver, url=URL):
     driver.get(url)
 
     # accept cookies
@@ -62,7 +65,7 @@ def read_projects_conda(driver, url='https://www.conda.ch/projekte-entdecken/'):
             EC.presence_of_element_located((By.ID, 'CookieBoxSaveButton'))
         ).click()
     except exceptions.ElementNotInteractableException as e:
-        print("INFO: cookies accept thing not Interactable")
+        print_c("INFO: cookies accept thing not Interactable")
 
     # click through load next page.    
     while True:
@@ -107,9 +110,8 @@ def read_projects_conda(driver, url='https://www.conda.ch/projekte-entdecken/'):
                         regex_result = html_attr_or_regex.findall(innnerHTML)
                         if len(regex_result) > 0:
                             value = regex_result[0]
-                            print(regex_result)
                 except exceptions.TimeoutException as e:
-                    print(f'WARNING: didn\'t find attribute {attribute_name} on page {campaing_url} waiting for {ATTRIBUTE_TIMEOUT} seconds')
+                    print_c(f'WARNING: didn\'t find attribute {attribute_name} on page {campaing_url} waiting for {ATTRIBUTE_TIMEOUT} seconds')
                     continue
 
                 attributes[attribute_name] = value
@@ -117,19 +119,24 @@ def read_projects_conda(driver, url='https://www.conda.ch/projekte-entdecken/'):
             driver.close()
             driver.switch_to.window(driver.window_handles[0])
             project_list.append(attributes)
-            print(attributes)
+    
+    print_c(f"INFO: projcet_list has {len(project_list)} entries")
     update_csv(project_list)
 
 
-# setup chrome driver
-chrome_options = Options()
-chrome_options.add_argument("--window-size=1920,1080")
-chrome_options.add_argument("--start-maximized")
-chrome_options.add_argument('--headless')
-chrome_options.add_argument('--no-sandbox')
-chrome_options.add_argument('--disable-dev-shm-usage')
+def run_scraper():
+     # setup chrome driver
+    chrome_options = Options()
+    chrome_options.add_argument("--window-size=1920,1080")
+    chrome_options.add_argument("--start-maximized")
+    chrome_options.add_argument('--headless')
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.add_argument('--disable-dev-shm-usage')
+
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+    read_projects_conda(driver)
+    driver.quit()
 
 
-driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
-read_projects_conda(driver)
-driver.quit()
+if __name__ == "__main__":
+    run_scraper()
