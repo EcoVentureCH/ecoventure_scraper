@@ -1,8 +1,8 @@
 import os
 import pandas as pd
-from WooCommerce.helperFunctions import downloadImage
-from WooCommerce.helperFunctions import imageToBinary
-from WooCommerce.helperFunctions import uploadImageAPI
+from src.helperFunctions import downloadImage
+from src.helperFunctions import imageToBinary
+from src.helperFunctions import uploadImageAPI
 
 current_directory = os.getcwd()
 keyPath = os.path.join(current_directory, "keys.csv") # Create the full path to the CSV file

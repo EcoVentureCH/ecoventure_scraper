@@ -81,6 +81,7 @@ if __name__ == "__main__":
                 print_usage()
                 print("ERROR: SECONDS needs to be an integer")
                 exit(1)
+
             start(seconds)
 
         elif command == "stop":
