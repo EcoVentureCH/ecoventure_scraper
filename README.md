@@ -24,9 +24,9 @@ sudo apt --fix-broken -y install
 ```
 (adapted from this website: https://github.com/password123456/setup-selenium-with-chrome-driver-on-ubuntu_debian)
 
-install other dependencies with pip3
+install other dependencies with pip3 globally
 ```shell
-pip3 install pandas, selenium, webdirver-manager globally
+pip3 install pandas selenium webdriver-manager woocommerce pillow
 ```
 or install dependencies in environement using miniconda 
 ```shell
@@ -37,7 +37,7 @@ rm -rf ~/miniconda3/miniconda.sh
 ~/miniconda3/bin/conda init bash
 conda create -n webscraper python=3.11.5
 conda activate webscraper
-conda install selenium, pandas
-pip install webdriver-manager
+conda install selenium pandas
+pip install webdriver-manager woocommerce pillow
 ```
 
