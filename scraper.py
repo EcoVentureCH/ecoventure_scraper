@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 import sys
 from sys import exit
-import scraper_daemon
-
+import src.scraper_daemon as scraper_daemon
 from utils import print_with_color as print
 
-'''daeomon interaction'''
+'''daemon interaction'''
 
 ids = [0, 1, 2, 3] # stub
 

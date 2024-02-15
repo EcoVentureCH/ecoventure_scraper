@@ -1,6 +1,8 @@
 from woocommerce import API
 import os
 import pandas as pd
+from utils import print_flushed as print
+
 
 WEBSITE="https://www.ecoventure.ch",  
 

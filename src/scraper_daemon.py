@@ -5,14 +5,13 @@ import time
 import os
 from utils import print_with_color as print_c
 
-from scraper_conda_ch import URL, scraper_start
+from src.scraper_conda_ch import URL, scraper_start
 from src.updateProducts import update_products
 from src.uploadProducts import upload_products, WEBSITE
 from src.uploadImage import upload_images
 
 DAEMON_STATE_FILE = ".daemon_state"
 LOG_FILE = "log.txt"
-
 
 def soft_exit(signum, frame):
     sys.exit(0)

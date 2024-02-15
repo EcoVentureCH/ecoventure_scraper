@@ -2,6 +2,8 @@ from woocommerce import API
 import os
 import pandas as pd
 from datetime import datetime
+from utils import print_flushed as print
+
 
 def update_products():
     # current working directory of this file
