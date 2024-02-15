@@ -1,16 +1,11 @@
 #!/usr/bin/env python3
 import sys
 from sys import exit
+import scraper_daemon
 
-_print = print
-def print_with_color(*a, **k):
-    RED='\033[0;31m'
-    NC='\033[0m' # No Color
-    if a and a[0].startswith('ERROR:'):
-        _print(f"{RED}{a[0]}{NC}" )
-    else:
-        _print(*a)
-print = print_with_color
+from utils import print_with_color as print
+
+
 
 def shift(args):
     return args[0], args[1:]
@@ -32,10 +27,10 @@ def print_usage():
     print()
 
 def start(seconds):
-    raise NotImplementedError
+    scraper_daemon.restart_daemon(seconds)
 
 def stop():
-    raise NotImplementedError
+    scraper_daemon.stop_daemon()
 
 def check_new():
     raise NotImplementedError
