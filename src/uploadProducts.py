@@ -32,7 +32,7 @@ def upload_products():
         df['id'] = None
 
     if 'published' not in df.columns:
-        df['published'] = 1.0
+        df['published'] = False
 
     if 'lastUpdate' not in df.columns:
         df['lastUpdate'] = None
@@ -75,12 +75,4 @@ def upload_products():
     df.to_csv(csv_file_path, index=False)
 
 if __name__ == "__main__":
-
-    #import subprocess
-    # Execute the scraper script
-    #subprocess.run(["python", "scraper_conda_sh.py"])
-    
     upload_products()
-
-
-

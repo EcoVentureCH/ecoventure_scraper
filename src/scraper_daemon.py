@@ -6,7 +6,7 @@ import os
 
 from src.utils import print_with_color as print_c
 from src.scraper_conda_ch import URL, scraper_start
-from src.updateProducts import update_products
+from src.updateProducts import update_projects
 from src.uploadProducts import upload_products, WEBSITE
 from src.uploadImage import upload_images
 
@@ -23,37 +23,37 @@ def scrape_and_upload(seconds):
     print_c('INFO: running scrape_and_upload() function')
     with scraper_start(log_out=LOG_FILE) as scraper:
 
-        print_c("INFO: started webdriver")
+        print("INFO: started webdriver")
         while True:
-            print_c(f"INFO: scraping '{URL}' ")
+            print(f"INFO: scraping '{URL}' ")
             
             start_time = time.time()
             scraper.run()
             return_code = 1
             duration = time.time() - start_time
-            print_c(f'INFO: scraper finished in {duration} seconds')
+            print(f'INFO: scraper finished in {duration} seconds')
             print()
 
             start_time_upload = time.time()
 
             try:
-                print_c("INFO: start udpating products")
-                update_products()
-                print_c("INFO: start uploading images")
+                print("INFO: start udpating projectss")
+                update_projects()
+                print("INFO: start uploading images")
                 upload_images()
-                print_c("INFO: start uploading projects")
-                upload_products()
+                #print("INFO: start uploading projects")
+                #upload_products()
             except FileNotFoundError as e:
                 print(e)
-                print_c(f"WARNING: couldn't upload to {WEBSITE}")
+                print(f"WARNING: couldn't upload to {WEBSITE}")
             else:
                 duration = time.time() - start_time_upload
-                print_c(f"INFO: uploaded changes to {WEBSITE} took {duration} sec")
+                print(f"INFO: uploaded changes to {WEBSITE} took {duration} sec")
 
             duration = time.time() - start_time
             remaining_sleep_timer = max(seconds - duration, 0)
 
-            print_c(f'INFO: next scrape job in {remaining_sleep_timer/60} min')
+            print(f'INFO: next scrape job in {remaining_sleep_timer/60} min')
             print()
 
             time.sleep(remaining_sleep_timer)
@@ -75,7 +75,6 @@ def restart_daemon(seconds=1):
                                        args=(seconds,),)
     process.daemon = True
     process.start()
-    time.sleep(2.2)
     process.join()
 
 def stop_daemon():

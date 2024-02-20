@@ -4,11 +4,11 @@ import sys
 from sys import exit
 import src.scraper_daemon as scraper_daemon
 from src.utils import print_with_color as print
-from src.utils import fmt_red, fmt_green
+from src.utils import fmt_red, fmt_green, fmt_orange
 import pandas as pd
 
 from src.updateProducts import create_project, delete_project
-from src.updateProducts import update_products
+from src.updateProducts import update_projects
 
 CSV_FNAME = 'conda.csv'
 
@@ -25,29 +25,40 @@ def check_new():
 
 def list_projects(df):
     print('Listing all projects')
-    print('   id    - published - last accessed              - link')
+    print('   ID    - published - ext_id - last accessed              - link')
     for index, row in df.iterrows():
         id = int(row['id'])
         lu = row['lastUpdate']
         link = row['external_link']
-        if row['published'] == 0 or pd.isnull(row['published']):
-            id = fmt_red.format(id)
-            publ = 'no '
+
+        if row['published'] == False or pd.isnull(row['published']):
+            if pd.isnull(row['id']):
+                id_here = fmt_red.format(id)
+                publ = 'no  '
+            else:
+                id_here = fmt_orange.format(id)
+                publ = 'soon'
         else:
-            id = fmt_green.format(id)
-            publ = 'yes'
-        print(f"   {fmt_red.format(id)} - {publ}       - {lu} - {link}")
+            if pd.isnull(row['id']):
+                id_here = fmt_orange.format(id)
+                publ = 'delt'
+            else:
+                id_here = fmt_green.format(id)
+                publ = 'yes '
 
-def add_project(id, df):
-    published = df.loc[df['id'] == id, 'published'].iloc[0]
+        print(f"   {id_here} - {publ}      - {lu} - {id} - {link}")
 
-    if pd.isnull(published) or published == 0:
-        df.loc[df['id'] == id, 'published'] = 1
-        create_project(id, df)
+def add_project(id_here, df):
+    for index, row in df.iterrows():
+        if index == id_here:
+            published = row['published']
+            if published == True:
+                print(f'ERROR: already published project {id_here}')
+            else:
+                df.loc[id_here, 'published'] = True
+                return df
     else:
-        print(f"ERROR: project with ID {id} is already added")
-        exit(1)
-    return df
+        assert False, 'unreachable'
 
 def remove_project(id, df):
     published = df.loc[df['id'] == id, 'published'].iloc[0]
@@ -69,6 +80,11 @@ if __name__ == "__main__":
     args = sys.argv
     program_name, args = shift(args)
 
+    def print_no_csv():
+        print( "Hint: to start the scraper call")
+        print(f"   {program_name} start SECONDS")
+        print( "ERROR: no projects found")
+    
     def print_description():
         print()
         print( "Scraper Service CLI by ecoventure.ch")
@@ -80,14 +96,15 @@ if __name__ == "__main__":
         print(f"  {program_name} Command [ARG]")
         print()
         print( "Commands:")
-        print( "  start SECONDS    - starts and runs the scraper every SECONDS seconds")
-        print( "  stop             - stops the scraper")
-        print( "  status           - check if the scraper is running")
-        print( "  check-new        - check if any new projects are available")
-        print( "  list-projects    - lists all projects and their active state and an id")
-        print( "  add-poject ID    - mark the project as active   and add on website")
-        print( "  remove-poject ID - mark the project as inactive and remove on website")
-        print( "  --help           - display help message")
+        print( "  start SECONDS - starts and runs the scraper every SECONDS seconds")
+        print( "  stop          - stops the scraper")
+        print( "  status        - check if the scraper is running")
+        print( "  check-new     - check if any new projects are available")
+        print( "  list          - lists all projects and their active state and an id")
+        print( "  add    ID     - mark the project as active")
+        print( "  remove ID     - mark the project as inactive")
+        print( "  publish       - apply active/inactive delete/add on website")
+        print( "  --help        - display help message")
         print()
 
 
@@ -130,45 +147,55 @@ if __name__ == "__main__":
         elif command == "check-new":
             check_new()
 
-        elif command == "list-projects":
+        elif command == "list":
+            if not os.path.exists(CSV_FNAME):
+                print_no_csv()
+                exit(1)
             df = pd.read_csv(CSV_FNAME)
             list_projects(df)
 
-        elif command == "add-project":
+        elif command == 'publish':
+            update_projects()
+
+        elif command == "add":
+            if not os.path.exists(CSV_FNAME):
+                print_no_csv()
+                exit(1)
+
+            df = pd.read_csv(CSV_FNAME)
+            ids = list(range(len(df)))
+
             if len(args) == 0:
                 print_usage()
-                print("ERROR: ID was not provided for 'add-project' Command")
+                print("ERROR: ID was not provided for 'add' Command")
                 exit(1)
 
             id, args = shift(args)
+
             try:
                 id = int(id)
             except ValueError:
                 print_usage()
-                print("ERROR: ID needs to be an integer")
+                print(f"Available:")
+                print(f"    {ids}")
+                print(f"ERROR: ID needs to be an integer")
                 exit(1)
-
-            df = pd.read_csv(CSV_FNAME)
-            ids = list(map(int, df['id'].to_list()))
 
             if id not in ids:
                 if len(ids) > 0:
-                    print( "Hint: call first list-projects")
-                    print(f"   {program_name} list-projects")
-                    print( "Available ids:")
-                    print(f"  {ids}")
-                    print( "ERROR: ID not in ids list")
-
+                    print( "Hint: call list to see projects")
+                    print(f"    {program_name} list")
+                    print( "IDs Available:")
+                    print(f"    {ids}")
+                    print(f"ERROR: project with ID {id} not found")
                 else:
-                    print( "Hint: call first:")
-                    print(f"   {program_name} start SECONDS")
-                    print( "ERROR: no projects found")
-                exit(1)
+                    assert False
             
             df = add_project(id, df)
             df.to_csv(CSV_FNAME, index=False)
 
-        elif command == "remove-project":
+        elif command == "remove":
+            assert False, 'impl remove'
             if len(args) == 0:
                 print_usage()
                 print("ERROR: ID was not provided for 'remove-project' Command")

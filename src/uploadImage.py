@@ -17,14 +17,14 @@ def upload_images():
     df = pd.read_csv(csv_file_path) # Read the CSV file into a DataFrame
 
     if 'wpImageLink' not in df.columns:
-        # If it doesn't exist, create a new column with no entries
         df['wpImageLink'] = None
+
+    if 'wpImageID' not in df.columns:
         df['wpImageID'] = None
 
     # download the image and upload to wordpress
     for index, row in df.iterrows():
-        if pd.isnull(row['wpImageLink']):
-
+        if pd.isnull(row['wpImageLink']) and row['published']:
  
             # download the image from the link
             curImage, fileName = downloadImage(row["image"], row["external_link"])

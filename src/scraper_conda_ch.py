@@ -144,28 +144,24 @@ class scraper_start:
         chrome_options.add_argument("--start-maximized")
         chrome_options.add_argument('--headless')
         chrome_options.add_argument('--no-sandbox')
-        #chrome_options.add_argument('--disable-dev-shm-usage')
+        chrome_options.add_argument('--disable-dev-shm-usage')
         self.crome_options = chrome_options
         self.log_out = log_out
         
     def __enter__(self):
-        print_c( 'INFO: entering scraper_start()')
-
-        self.service = Service(ChromeDriverManager().install())
-        
-        self.driver = webdriver.Chrome(service=self.service, 
-                                       options=self.crome_options)
-          
-        print('INFO: Chromedriver started')
         if self.log_out is not None:
-            print_c(f'INFO: all stdout is printed to {self.log_out}')
+            print_c(f'INFO: all stdout will be printed to {self.log_out}')
             sys.stdout.flush()
             self._stdout = sys.stdout
             self._stderr = sys.stderr
             sys.stdout = open(self.log_out, 'w')
             sys.stderr = sys.stdout
 
-        print_c( 'INFO: entered scraper_start()')
+        print('INFO: starting chrome driver')
+        self.service = Service(ChromeDriverManager().install())
+        self.driver = webdriver.Chrome(service=self.service, 
+                                       options=self.crome_options)
+        print('INFO: started chrome driver')
         return self
         
     def __exit__(self, *args):

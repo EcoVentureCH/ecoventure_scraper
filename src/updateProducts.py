@@ -19,7 +19,7 @@ wcapi = API(
     version="wc/v3" 
 )
 
-def update_products():
+def update_projects():
 
     df = pd.read_csv(csv_file_path)
 
@@ -28,29 +28,32 @@ def update_products():
         df['id'] = None
 
     if 'published' not in df.columns:
-        df['published'] = None
+        df['published'] = False
 
     if 'lastUpdate' not in df.columns:
         df['lastUpdate'] = None
 
     # loop through rows
     for index, row in df.iterrows():
-        if not pd.isnull(row['id']) and row["published"] == 1: # only create product if there is no ID yet
-            create_project(row['id'], df)
+
+        # only create product if there is no ID yet and published set
+        if pd.isnull(row['id']) and row["published"]: 
+            id = create_project(row)
+            df.at[index, 'id'] = id
             df.at[index, 'lastUpdate'] = str(datetime.now())
 
+        # remove projects from website
+        if not pd.isnull(row['id']) and not row["published"]:
+            delete_project(row)
+            df.at[index, 'id'] = None
+            df.at[index, 'lastUpdate'] = str(datetime.now())
 
-        if not pd.isnull(row['id']) and row["published"] == 0: # delete project if status was set to 0
-            delete_project(row['id'], df)
 
     # save updated csv file
     df.to_csv(csv_file_path, index=False)
 
 
-def create_project(id, df: pd.DataFrame):
-    row = df.loc[df['id'] == id].iloc[0]
-    index = df.index[df['id'] == id][0]
-
+def create_project(row):
     # Access values of each column for the current row
     data = {
         "name": row["name"],
@@ -72,16 +75,17 @@ def create_project(id, df: pd.DataFrame):
     }
 
     # upload
-    update = wcapi.put(f"products/{id}" , data)
-    print(update)
-    
-    # add ID to newProducts object
-    print(f"INFO: new project added. ID: {row['id']}")
+    update = wcapi.put(f"products" , data)
+    id = update['id']
+    print(f"INFO: new project added. ID: {id}")
+    return id
 
 
-def delete_project(id, df):
+def delete_project(row):
+    id = row['id']
+    assert(id is not None)
     response = wcapi.delete(f"products/{id}", params={"force": True}).json()
-    print(f"INFO: project deleted. ID: {int(df[df['id'] == id]['id'].iloc[0])}")
+    print(f"INFO: project deleted. ID: {id}")
 
 
 def delete_inactive_projects():
@@ -90,15 +94,10 @@ def delete_inactive_projects():
     df = pd.read_csv(csv_file_path)
 
     for index, row in df.iterrows():
-        if not pd.isnull(row['published']) == 0:
+        if pd.isnull(row['published']):
             delete_project(row['id'])
 
 
 
 if __name__ == "__main__":
-    
-    #import subprocess
-    # Execute the scraper script
-    #subprocess.run(["python", "scraper_conda_sh.py"])
-    
-    update_products()
+    update_projects()
