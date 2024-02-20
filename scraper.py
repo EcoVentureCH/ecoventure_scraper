@@ -39,9 +39,6 @@ def stop():
     scraper_daemon.stop_daemon()
 
 '''csv interaction'''
-def check_new():
-    raise NotImplementedError
-
 def list_projects(df):
     print('Listing all projects')
     print('   ID    - published - ext_id - last accessed                - link')
@@ -99,6 +96,8 @@ def remove_project(id_here, df):
     else:
         assert False, 'unreachable'
 
+
+
 if __name__ == "__main__":
 
     '''Handle command line arguments'''
@@ -120,32 +119,57 @@ if __name__ == "__main__":
     
     def print_description():
         print()
-        print( "Scraper Service CLI by ecoventure.ch")
+        print( "Scraper Service CLI of ecoventure.ch")
         print( "Command line interface to interact with the scraping service.")
         print()
 
     def print_usage():
         print( "Usage:")
-        print(f"  {program_name} Command [ARG]")
+        print(f"  {program_name} Command [...]")
         print()
         print( "Commands:")
-        print( "  start SECONDS - starts and runs the scraper every SECONDS seconds")
-        print( "  stop          - stops the scraper")
-        print( "  status        - check if the scraper is running")
-        print( "  check-new     - check if any new projects are available")
-        print( "  list          - lists all projects and their active state and an id")
-        print( "  add    ID     - mark the project as active")
-        print( "  remove ID     - mark the project as inactive")
-        print( "  publish       - apply active/inactive delete/add on website")
-        print( "  --help        - display help message")
+        print( "  start <SECONDS>        - starts the scraper (runs every <SECONDS> seconds)")
+        print( "  stop                   - stops the scraper")
+        print( "  status                 - check if the scraper is running")
+        print( "  list                   - lists all projects and their state")
+        print( "  add    <ID> [<ID>...]  - mark project[s] as active")
+        print( "  remove <ID> [<ID>...]  - mark project[s] as inactive")
+        print( "  publish                - apply del/add-ed to website")
+        print( "  --help                 - display help message")
         print()
+
+    def parse_ids_from_args(args, ids):
+        ids = []
+        for arg in args:
+            try:
+                id = int(arg)
+            except ValueError:
+                print( "IDs Available:")
+                print(f"    {ids}")
+                print(f"ERROR: ID {arg} needs to be an integer")
+                exit(1)
+            if id not in ids:
+                if len(ids) > 0:
+                    print( "Hint: call list to see projects")
+                    print(f"    {program_name} list")
+                    print( "IDs Available:")
+                    print(f"    {ids}")
+                    print(f"ERROR: project with ID {id} not found")
+                    exit(0)
+                else:
+                    assert False
+            ids.append(id)
+        return ids
+
 
 
     if len(args) == 0:
+        print_description()
         print_usage()
         print( "ERROR: No Command was provided")
 
-    elif 3 > len(args) > 0:
+
+    elif 10 > len(args) > 0:
         command, args = shift(args)
         command = command.lower()
         if command == "--help":
@@ -153,15 +177,17 @@ if __name__ == "__main__":
             print_usage()
         elif command == "start":
             if len(args) == 0:
-                print_usage()
-                print("ERROR: SECONDS was not provided for 'start' Command")
+                print("ERROR: <SECONDS> was not provided for 'start' Command")
                 exit(1)
-            seconds, _ = shift(args)
-            try:
-                seconds = int(seconds)
-            except ValueError:
-                print_usage()
-                print("ERROR: SECONDS needs to be an integer")
+            elif len(args) == 1:
+                seconds, _ = shift(args)
+                try:
+                    seconds = int(seconds)
+                except ValueError:
+                    print("ERROR: <SECONDS> needs to be an integer")
+                    exit(1)
+            else:
+                print("ERROR: too many arguments for 'start' Command")
                 exit(1)
 
             start(seconds)
@@ -169,16 +195,13 @@ if __name__ == "__main__":
         elif command == 'status':
             pid = scraper_daemon.get_pid()
             if pid >= 0:
-                print(f"status: daemon running PID={pid}")
+                print(f"INFO: status: daemon running PID={pid}")
             else:
-                print(f"status: daemon not runnning")
+                print(f"INFO: status: daemon not runnning")
 
 
         elif command == "stop":
             stop()
-        
-        elif command == "check-new":
-            check_new()
 
         elif command == "list":
             df = load_csv()
@@ -197,32 +220,12 @@ if __name__ == "__main__":
                 print("ERROR: ID was not provided for 'add' Command")
                 exit(1)
 
-            id, args = shift(args)
-
-            try:
-                id = int(id)
-            except ValueError:
-                print_usage()
-                print(f"Available:")
-                print(f"    {ids}")
-                print(f"ERROR: ID needs to be an integer")
-                exit(1)
-
-            if id not in ids:
-                if len(ids) > 0:
-                    print( "Hint: call list to see projects")
-                    print(f"    {program_name} list")
-                    print( "IDs Available:")
-                    print(f"    {ids}")
-                    print(f"ERROR: project with ID {id} not found")
-                else:
-                    assert False
-            
-            df = add_project(id, df)
+            for id in parse_ids_from_args(args, ids)
+                df = add_project(id, df)
+    
             df.to_csv(CSV_FNAME, index=False)
 
         elif command == "remove":
-
             df = load_csv()
             ids = list(range(len(df)))
 
@@ -231,25 +234,9 @@ if __name__ == "__main__":
                 print("ERROR: ID was not provided for 'remove' Command")
                 exit(1)
 
-            id, args = shift(args)
-            try:
-                id = int(id)
-            except ValueError:
-                print_usage()
-                print(f"Available:")
-                print(f"    {ids}")
-                print(f"ERROR: ID needs to be an integer")
-                exit(1)
+            for id in parse_ids_from_args(args, ids)
+                df = remove_project(id, df)
 
-            if id not in ids:
-                if len(ids) > 0:
-                    print( "Hint: call list to see projects")
-                    print(f"    {program_name} list")
-                    print(f"ERROR: project with ID {id} not found")
-                else:
-                    assert False
-            
-            df = remove_project(id, df)
             df.to_csv(CSV_FNAME, index=False)
 
 
