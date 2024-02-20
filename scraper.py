@@ -7,8 +7,8 @@ from src.utils import print_with_color as print
 from src.utils import fmt_red, fmt_green, fmt_orange
 import pandas as pd
 
-from src.updateProducts import create_project, delete_project
 from src.updateProducts import update_projects
+from src.uploadImages import upload_images
 
 CSV_FNAME = 'conda.csv'
 
@@ -25,28 +25,32 @@ def check_new():
 
 def list_projects(df):
     print('Listing all projects')
-    print('   ID    - published - ext_id - last accessed              - link')
+    print('   ID    - published - ext_id - last accessed                - link')
     for index, row in df.iterrows():
-        id = int(row['id'])
+        if not pd.isnull(row['id']):
+            id = int(row['id'])
+        else:
+            id = '     '
         lu = row['lastUpdate']
+        lu = lu if not pd.isnull(lu) else '                          '
         link = row['external_link']
 
         if row['published'] == False or pd.isnull(row['published']):
             if pd.isnull(row['id']):
-                id_here = fmt_red.format(id)
+                id_here = fmt_red.format(index)
                 publ = 'no  '
             else:
-                id_here = fmt_orange.format(id)
-                publ = 'soon'
+                id_here = fmt_orange.format(index)
+                publ = 'delt'
         else:
             if pd.isnull(row['id']):
-                id_here = fmt_orange.format(id)
-                publ = 'delt'
+                id_here = fmt_orange.format(index)
+                publ = 'soon'
             else:
-                id_here = fmt_green.format(id)
+                id_here = fmt_green.format(index)
                 publ = 'yes '
 
-        print(f"   {id_here} - {publ}      - {lu} - {id} - {link}")
+        print(f"   {id_here}     - {publ}      - {id}  - {lu}   - {link}")
 
 def add_project(id_here, df):
     for index, row in df.iterrows():
@@ -155,6 +159,7 @@ if __name__ == "__main__":
             list_projects(df)
 
         elif command == 'publish':
+            upload_images()
             update_projects()
 
         elif command == "add":

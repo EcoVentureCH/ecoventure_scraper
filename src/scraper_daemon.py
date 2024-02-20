@@ -8,7 +8,7 @@ from src.utils import print_with_color as print_c
 from src.scraper_conda_ch import URL, scraper_start
 from src.updateProducts import update_projects
 from src.uploadProducts import upload_products, WEBSITE
-from src.uploadImage import upload_images
+from src.uploadImages import upload_images
 
 DAEMON_STATE_FILE = ".daemon_state"
 LOG_FILE = "log.txt"

@@ -40,12 +40,14 @@ def update_projects():
         if pd.isnull(row['id']) and row["published"]: 
             id = create_project(row)
             df.at[index, 'id'] = id
+            df['lastUpdate'] = df['lastUpdate'].astype(str)
             df.at[index, 'lastUpdate'] = str(datetime.now())
 
         # remove projects from website
         if not pd.isnull(row['id']) and not row["published"]:
             delete_project(row)
             df.at[index, 'id'] = None
+            df['lastUpdate'] = df['lastUpdate'].astype(str)
             df.at[index, 'lastUpdate'] = str(datetime.now())
 
 
@@ -75,7 +77,7 @@ def create_project(row):
     }
 
     # upload
-    update = wcapi.put(f"products" , data)
+    update = wcapi.post("products" , data).json()
     id = update['id']
     print(f"INFO: new project added. ID: {id}")
     return id

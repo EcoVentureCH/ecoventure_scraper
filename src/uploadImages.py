@@ -39,6 +39,7 @@ def upload_images():
                                         password=keys.iloc[2,1], fileName=fileName) ## add password (Action password, not normal admin password)
 
             # add url and id to DataFrame
+            df['wpImageLink'] = df['wpImageLink'].astype(str)
             df.at[index, 'wpImageLink'] = uploadImage
             df.at[index, 'wpImageID'] = ImageID
             
@@ -46,9 +47,9 @@ def upload_images():
                 print("Image uploaded successfully!")
                 print("Uploaded image URL:", uploadImage)
             else:
-                print("Failed to upload image.")
+                print("ERROR: Failed to upload image.")
         else:
-            print("Already got Image with {}".format(row['wpImageID']))
+            print("INFO: skipped image for project {}".format(row['id']))
  
 
     # save updated csv file
