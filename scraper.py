@@ -54,19 +54,19 @@ def list_projects(df):
         if row['published'] == False or pd.isnull(row['published']):
             if pd.isnull(row['id']):
                 id_here = fmt_red.format(index)
-                publ = 'no  '
+                publ = fmt_red.format('no     ')
             else:
                 id_here = fmt_orange.format(index)
-                publ = 'delt'
+                publ = fmt_orange.format('remove ')
         else:
             if pd.isnull(row['id']):
                 id_here = fmt_orange.format(index)
-                publ = 'soon'
+                publ = fmt_orange.format('add    ')
             else:
                 id_here = fmt_green.format(index)
-                publ = 'yes '
+                publ = fmt_green.format('yes    ')
 
-        print(f"   {id_here}     - {publ}      - {id}  - {lu}   - {link}")
+        print(f"   {id_here}     - {publ}   - {id}  - {lu}   - {link}")
     print()
     hint_publish()
 
@@ -113,8 +113,9 @@ if __name__ == "__main__":
         print(f"   {program_name} start SECONDS")
         print( "ERROR: no projects found")
 
-    def hint_publish():
-        print( "Hint: to publish changes run:")
+    def hint_publish(): 
+        changes = fmt_orange.format('changes')
+        print(f"Hint: to publish {changes} run:")
         print(f"   {program_name} publish")
     
     def print_description():
@@ -138,7 +139,7 @@ if __name__ == "__main__":
         print( "  --help                 - display help message")
         print()
 
-    def parse_ids_from_args(args, ids):
+    def parse_ids_from_args(args, valid_ids):
         ids = []
         for arg in args:
             try:
@@ -148,7 +149,7 @@ if __name__ == "__main__":
                 print(f"    {ids}")
                 print(f"ERROR: ID {arg} needs to be an integer")
                 exit(1)
-            if id not in ids:
+            if id not in valid_ids:
                 if len(ids) > 0:
                     print( "Hint: call list to see projects")
                     print(f"    {program_name} list")
@@ -213,31 +214,41 @@ if __name__ == "__main__":
 
         elif command == "add":
             df = load_csv()
-            ids = list(range(len(df)))
+            valid_ids = list(range(len(df)))
 
             if len(args) == 0:
                 print_usage()
                 print("ERROR: ID was not provided for 'add' Command")
                 exit(1)
 
-            for id in parse_ids_from_args(args, ids)
+            ids = parse_ids_from_args(args, valid_ids)
+            for id in ids:
                 df = add_project(id, df)
-    
+
             df.to_csv(CSV_FNAME, index=False)
+            if len(ids) == 1:
+                print(f"INFO: marked project {ids[0]} for publishing.")
+            else:
+                print(f"INFO: marked projects {ids} for publishing.")
 
         elif command == "remove":
             df = load_csv()
-            ids = list(range(len(df)))
+            valid_ids = list(range(len(df)))
 
             if len(args) == 0:
                 print_usage()
                 print("ERROR: ID was not provided for 'remove' Command")
                 exit(1)
 
-            for id in parse_ids_from_args(args, ids)
+            ids = parse_ids_from_args(args, valid_ids)
+            for id in ids:
                 df = remove_project(id, df)
 
             df.to_csv(CSV_FNAME, index=False)
+            if len(ids) == 1:
+                print(f"INFO: marked project {ids[0]} for removal.")
+            else:
+                print(f"INFO: marked projects {ids} for removal.")
 
 
         else:
