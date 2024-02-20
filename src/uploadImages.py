@@ -49,7 +49,8 @@ def upload_images():
             else:
                 print("ERROR: Failed to upload image.")
         else:
-            print("INFO: skipped image for project {}".format(row['id']))
+            pass
+            #print("INFO: skipped image for project {}".format(row['id']))
  
 
     # save updated csv file

@@ -36,6 +36,13 @@ def update_projects():
     # loop through rows
     for index, row in df.iterrows():
 
+        # remove projects from website
+        if not pd.isnull(row['id']) and not row["published"]:
+            delete_project(row)
+            df.at[index, 'id'] = None
+            df['lastUpdate'] = df['lastUpdate'].astype(str)
+            df.at[index, 'lastUpdate'] = str(datetime.now())
+
         # only create product if there is no ID yet and published set
         if pd.isnull(row['id']) and row["published"]: 
             id = create_project(row)
@@ -43,12 +50,6 @@ def update_projects():
             df['lastUpdate'] = df['lastUpdate'].astype(str)
             df.at[index, 'lastUpdate'] = str(datetime.now())
 
-        # remove projects from website
-        if not pd.isnull(row['id']) and not row["published"]:
-            delete_project(row)
-            df.at[index, 'id'] = None
-            df['lastUpdate'] = df['lastUpdate'].astype(str)
-            df.at[index, 'lastUpdate'] = str(datetime.now())
 
 
     # save updated csv file
@@ -84,7 +85,7 @@ def create_project(row):
 
 
 def delete_project(row):
-    id = row['id']
+    id = int(row['id'])
     assert(id is not None)
     response = wcapi.delete(f"products/{id}", params={"force": True}).json()
     print(f"INFO: project deleted. ID: {id}")

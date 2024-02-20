@@ -12,6 +12,25 @@ from src.uploadImages import upload_images
 
 CSV_FNAME = 'conda.csv'
 
+def load_csv():
+
+    if not os.path.exists(CSV_FNAME):
+        error_no_csv()
+        exit(1)
+
+    df = pd.read_csv(CSV_FNAME, dtype={
+        'external_link':'string',
+        'name': 'string',
+        'image': 'string',
+        'min_investment': 'string',
+        'id': 'float64',
+        'published': 'bool',
+        'lastUpdate': 'str',
+        'wpImageLink': 'str',
+        'wpImageID': 'float64'
+    })
+    return df
+
 '''daemon interaction'''
 def start(seconds):
     scraper_daemon.restart_daemon(seconds)
@@ -51,6 +70,8 @@ def list_projects(df):
                 publ = 'yes '
 
         print(f"   {id_here}     - {publ}      - {id}  - {lu}   - {link}")
+    print()
+    hint_publish()
 
 def add_project(id_here, df):
     for index, row in df.iterrows():
@@ -58,21 +79,25 @@ def add_project(id_here, df):
             published = row['published']
             if published == True:
                 print(f'ERROR: already published project {id_here}')
+                exit(1)
             else:
                 df.loc[id_here, 'published'] = True
                 return df
     else:
         assert False, 'unreachable'
 
-def remove_project(id, df):
-    published = df.loc[df['id'] == id, 'published'].iloc[0]
-    if not pd.isnull(published) or published == 1:
-        delete_project(id, df)
-        df.loc[df['id'] == id, 'published'] = 0
+def remove_project(id_here, df):
+    for index, row in df.iterrows():
+        if index == id_here:
+            published = row['published']
+            if published == False:
+                print(f'ERROR: already removed project {id_here}')
+                exit(1)
+            else:
+                df.loc[id_here, 'published'] = False
+                return df
     else:
-        print(f"ERROR: project with ID {id} is already removed")
-        exit(1)
-    return df
+        assert False, 'unreachable'
 
 if __name__ == "__main__":
 
@@ -84,10 +109,14 @@ if __name__ == "__main__":
     args = sys.argv
     program_name, args = shift(args)
 
-    def print_no_csv():
+    def error_no_csv():
         print( "Hint: to start the scraper call")
         print(f"   {program_name} start SECONDS")
         print( "ERROR: no projects found")
+
+    def hint_publish():
+        print( "Hint: to publish changes run:")
+        print(f"   {program_name} publish")
     
     def print_description():
         print()
@@ -152,10 +181,7 @@ if __name__ == "__main__":
             check_new()
 
         elif command == "list":
-            if not os.path.exists(CSV_FNAME):
-                print_no_csv()
-                exit(1)
-            df = pd.read_csv(CSV_FNAME)
+            df = load_csv()
             list_projects(df)
 
         elif command == 'publish':
@@ -163,11 +189,7 @@ if __name__ == "__main__":
             update_projects()
 
         elif command == "add":
-            if not os.path.exists(CSV_FNAME):
-                print_no_csv()
-                exit(1)
-
-            df = pd.read_csv(CSV_FNAME)
+            df = load_csv()
             ids = list(range(len(df)))
 
             if len(args) == 0:
@@ -200,10 +222,13 @@ if __name__ == "__main__":
             df.to_csv(CSV_FNAME, index=False)
 
         elif command == "remove":
-            assert False, 'impl remove'
+
+            df = load_csv()
+            ids = list(range(len(df)))
+
             if len(args) == 0:
                 print_usage()
-                print("ERROR: ID was not provided for 'remove-project' Command")
+                print("ERROR: ID was not provided for 'remove' Command")
                 exit(1)
 
             id, args = shift(args)
@@ -211,26 +236,19 @@ if __name__ == "__main__":
                 id = int(id)
             except ValueError:
                 print_usage()
-                print("ERROR: ID needs to be an integer")
+                print(f"Available:")
+                print(f"    {ids}")
+                print(f"ERROR: ID needs to be an integer")
                 exit(1)
-
-            df = pd.read_csv(CSV_FNAME)
-            ids = list(map(int, df['id'].to_list()))
 
             if id not in ids:
                 if len(ids) > 0:
-                    print( "Hint: call first list-projects")
-                    print(f"   {program_name} list-projects")
-                    print( "Available ids:")
-                    print(f"  {ids}")
-                    print( "ERROR: ID not in ids list")
-
+                    print( "Hint: call list to see projects")
+                    print(f"    {program_name} list")
+                    print(f"ERROR: project with ID {id} not found")
                 else:
-                    print( "Hint: call first:")
-                    print(f"   {program_name} start SECONDS")
-                    print( "ERROR: no projects found")
-                exit(1)
-
+                    assert False
+            
             df = remove_project(id, df)
             df.to_csv(CSV_FNAME, index=False)
 
