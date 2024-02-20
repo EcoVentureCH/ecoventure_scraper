@@ -7,11 +7,11 @@ import os
 from src.utils import print_with_color as print_c
 from src.scraper_conda_ch import URL, scraper_start
 from src.updateProducts import update_projects
-from src.uploadProducts import upload_products, WEBSITE
 from src.uploadImages import upload_images
 
-DAEMON_STATE_FILE = ".daemon_state"
+WEBSITE = "https://www.ecoventure.ch"
 LOG_FILE = "log.txt"
+DAEMON_STATE_FILE = ".daemon_state"
 
 def soft_exit(signum, frame):
     sys.exit(0)
@@ -41,11 +41,11 @@ def scrape_and_upload(seconds):
                 update_projects()
                 print("INFO: start uploading images")
                 upload_images()
-                #print("INFO: start uploading projects")
-                #upload_products()
+
             except FileNotFoundError as e:
                 print(e)
                 print(f"WARNING: couldn't upload to {WEBSITE}")
+
             else:
                 duration = time.time() - start_time_upload
                 print(f"INFO: uploaded changes to {WEBSITE} took {duration} sec")
@@ -53,7 +53,7 @@ def scrape_and_upload(seconds):
             duration = time.time() - start_time
             remaining_sleep_timer = max(seconds - duration, 0)
 
-            print(f'INFO: next scrape job in {remaining_sleep_timer/60} min')
+            print(f'INFO: next scrape job in {remaining_sleep_timer/60:.1f} min')
             print()
 
             time.sleep(remaining_sleep_timer)
