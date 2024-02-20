@@ -2,7 +2,6 @@
 import os
 import sys
 from sys import exit
-import src.scraper_daemon as scraper_daemon
 from src.utils import print_with_color as print
 from src.utils import fmt_red, fmt_green, fmt_orange
 import pandas as pd
@@ -33,9 +32,11 @@ def load_csv():
 
 '''daemon interaction'''
 def start(seconds):
+    import src.scraper_daemon as scraper_daemon
     scraper_daemon.restart_daemon(seconds)
 
 def stop():
+    import src.scraper_daemon as scraper_daemon
     scraper_daemon.stop_daemon()
 
 '''csv interaction'''
@@ -194,7 +195,8 @@ if __name__ == "__main__":
             start(seconds)
 
         elif command == 'status':
-            pid = scraper_daemon.get_pid()
+            from src.scraper_daemon import get_pid
+            pid = get_pid()
             if pid >= 0:
                 print(f"INFO: status: daemon running PID={pid}")
             else:
