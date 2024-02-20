@@ -15,7 +15,6 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.common import exceptions
 import pandas as pd
 from src.utils import print_flushed as print
-from src.utils import print_with_color as print_c
 
 
 URL = 'https://www.conda.ch/projekte-entdecken/'
@@ -35,7 +34,7 @@ UPDATABLE = list(ATTRIBUTE_CSS_SELECTORS.keys())
 UPDATABLE.remove('external_link')
 
 def update_csv(project_list):
-    print_c(f'INFO: writing entries to {CSV_FNAME}')
+    print(f'INFO: writing entries to {CSV_FNAME}')
     
     if os.path.exists(CSV_FNAME):
         df = pd.read_csv(CSV_FNAME)
@@ -65,7 +64,7 @@ def read_projects_conda(driver, url=URL):
             EC.presence_of_element_located((By.ID, 'CookieBoxSaveButton'))
         ).click()
     except exceptions.ElementNotInteractableException as e:
-        print_c("WARNING: cookies accept thing not Interactable")
+        print("WARNING: cookies accept thing not Interactable")
 
 
     # click through load next page.    
@@ -116,7 +115,7 @@ def read_projects_conda(driver, url=URL):
                         if len(regex_result) > 0:
                             value = regex_result[0]
                 except exceptions.TimeoutException as e:
-                    print_c(f'WARNING: didn\'t find attribute {attribute_name} on page {campaing_url} waiting for {ATTRIBUTE_TIMEOUT} seconds')
+                    print(f'WARNING: didn\'t find attribute {attribute_name} on page {campaing_url} waiting for {ATTRIBUTE_TIMEOUT} seconds')
                     continue
 
                 attributes[attribute_name] = value
@@ -125,7 +124,7 @@ def read_projects_conda(driver, url=URL):
             driver.switch_to.window(driver.window_handles[0])
             project_list.append(attributes)
     
-    print_c(f"INFO: projcet_list has {len(project_list)} entries")
+    print(f"INFO: projcet_list has {len(project_list)} entries")
     update_csv(project_list)
 
 
@@ -150,7 +149,7 @@ class scraper_start:
         
     def __enter__(self):
         if self.log_out is not None:
-            print_c(f'INFO: all stdout will be printed to {self.log_out}')
+            print(f'INFO: all stdout will be printed to {self.log_out}')
             sys.stdout.flush()
             self._stdout = sys.stdout
             self._stderr = sys.stderr
@@ -172,9 +171,9 @@ class scraper_start:
             sys.stdout.flush()
             sys.stderr.flush()
 
-        print_c('INFO: exiting scraper_start()')
+        print('INFO: exiting scraper_start()')
         self.driver.quit()
-        print_c('INFO: exited scraper_start()')
+        print('INFO: exited scraper_start()')
 
 
 
