@@ -5,6 +5,8 @@ import os
 from PIL import Image
 from io import BytesIO
 
+from src.utils import print_flushed as print
+
 # download image and return as object
 def downloadImage(url, externalLink):
     # Send a GET request to the URL

@@ -1,6 +1,7 @@
 '''
 test scraper for scraping active projects on www.conda.ch
 '''
+import sys
 import os
 import time
 import re
@@ -13,8 +14,8 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.common import exceptions
 import pandas as pd
-from utils import print_flushed as print
-from utils import print_with_color as print_c
+from src.utils import print_flushed as print
+from src.utils import print_with_color as print_c
 
 
 URL = 'https://www.conda.ch/projekte-entdecken/'
@@ -58,14 +59,14 @@ def update_csv(project_list):
 
 def read_projects_conda(driver, url=URL):
     driver.get(url)
-
     # accept cookies
     try:
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.ID, 'CookieBoxSaveButton'))
         ).click()
     except exceptions.ElementNotInteractableException as e:
-        print_c("INFO: cookies accept thing not Interactable")
+        print_c("WARNING: cookies accept thing not Interactable")
+
 
     # click through load next page.    
     while True:
@@ -76,7 +77,10 @@ def read_projects_conda(driver, url=URL):
         except:
             break
         driver.execute_script("arguments[0].scrollIntoView();", element)
+
         element.click()
+        print('.', end='')
+    print()
 
 
     campaign_elements = WebDriverWait(driver, 10).until(
@@ -103,6 +107,7 @@ def read_projects_conda(driver, url=URL):
                     meta_tag = WebDriverWait(driver, ATTRIBUTE_TIMEOUT).until(
                         EC.presence_of_element_located((By.CSS_SELECTOR, selector))
                     )
+
                     if isinstance(html_attr_or_regex, str): 
                         value = meta_tag.get_attribute(html_attr_or_regex)
                     else:
@@ -124,19 +129,58 @@ def read_projects_conda(driver, url=URL):
     update_csv(project_list)
 
 
-def run_scraper():
-     # setup chrome driver
-    chrome_options = Options()
-    chrome_options.add_argument("--window-size=1920,1080")
-    chrome_options.add_argument("--start-maximized")
-    chrome_options.add_argument('--headless')
-    chrome_options.add_argument('--no-sandbox')
-    chrome_options.add_argument('--disable-dev-shm-usage')
+class scraper_start:
+    '''class that handles wendriver close in a context
+    
+       example:
+       
+       with scraper_start() as scraper:
+           scraper.run()
+    '''
+    def __init__(self, log_out=None):
+        chrome_options = webdriver.ChromeOptions()
+        chrome_options.add_argument("start-maximized")
+        chrome_options.add_argument("--window-size=1920,1080")
+        chrome_options.add_argument("--start-maximized")
+        chrome_options.add_argument('--headless')
+        chrome_options.add_argument('--no-sandbox')
+        chrome_options.add_argument('--disable-dev-shm-usage')
+        self.crome_options = chrome_options
+        self.log_out = log_out
+        
+    def __enter__(self):
+        if self.log_out is not None:
+            print_c(f'INFO: all stdout will be printed to {self.log_out}')
+            sys.stdout.flush()
+            self._stdout = sys.stdout
+            self._stderr = sys.stderr
+            sys.stdout = open(self.log_out, 'w')
+            sys.stderr = sys.stdout
 
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
-    read_projects_conda(driver)
-    driver.quit()
+        print('INFO: starting chrome driver')
+        self.service = Service(ChromeDriverManager().install())
+        self.driver = webdriver.Chrome(service=self.service, 
+                                       options=self.crome_options)
+        print('INFO: started chrome driver')
+        return self
+        
+    def __exit__(self, *args):
+        if self.log_out is not None:
+            sys.stdout.close()
+            sys.stdout = self._stdout
+            sys.stderr = self._stderr
+            sys.stdout.flush()
+            sys.stderr.flush()
 
+        print_c('INFO: exiting scraper_start()')
+        self.driver.quit()
+        print_c('INFO: exited scraper_start()')
+
+
+
+    def run(self):
+        read_projects_conda(self.driver)
 
 if __name__ == "__main__":
-    run_scraper()
+    with scraper_start() as scraper:
+        scraper.run()
