@@ -66,15 +66,3 @@ def uploadImageAPI(image_binary, username, password, fileName):
     else:
         print(f"Failed to upload image. Status code: {response.status_code}")
         return None
-
-# return single dictionaries from string input (required to append categories to product)
-def dictionaryFromString(input_string, key_name):
-    elements = input_string.split(';')
-    result = []
-    for element in elements:
-        result.append({key_name: element})
-    return result
-
-# return all values from a given key
-def extractValues(dicts, key):
-    return [d[key] for d in dicts if key in d]
