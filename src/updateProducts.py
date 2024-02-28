@@ -1,6 +1,7 @@
 from woocommerce import API
 import os
 import pandas as pd
+
 from datetime import datetime
 from src.utils import print_flushed as print
 
@@ -33,6 +34,15 @@ def update_projects():
     if 'lastUpdate' not in df.columns:
         df['lastUpdate'] = None
 
+    if 'shortName' not in df.columns:
+        df['shortName'] = None
+    
+    if 'categories' not in df.columns:
+        df['categories'] = None
+
+    if 'description' not in df.columns:
+        df['description'] = None
+
     # loop through rows
     for index, row in df.iterrows():
 
@@ -50,11 +60,20 @@ def update_projects():
             df['lastUpdate'] = df['lastUpdate'].astype(str)
             df.at[index, 'lastUpdate'] = str(datetime.now())
 
-
-
     # save updated csv file
     df.to_csv(csv_file_path, index=False)
 
+def returnCategories(row):
+    # get all categories from wordpress
+    allCategories = wcapi.get("products/categories").json()
+    
+    # only keep entries that are in row | return name and id of category and remove other keys
+    filteredCat = [d for d in allCategories if d['name'] in row]
+    filteredCat = [{k: v for k, v in d.items() if k in ['name', 'id']} for d in filteredCat]
+
+    #to do: impelement a check that warns user that Category does not exist yet (or typo)
+
+    return filteredCat
 
 def create_project(row):
     # Access values of each column for the current row
@@ -76,13 +95,19 @@ def create_project(row):
             "id": float(row["wpImageID"])}
         ]
     }
+    # appends additional information if exists (description, shortName, category)
+    if pd.notna(row['description']) and row['description']:
+        data["description"] = row["description"]
+    if pd.notna(row['shortName']) and row['shortName']:
+        data["name"] = row["shortName"] # overwrites long name
+    if pd.notna(row["categories"]) and row["categories"]:
+        data["categories"] = returnCategories(row = row["categories"])
 
     # upload
     update = wcapi.post("products" , data).json()
     id = update['id']
     print(f"INFO: new project added. ID: {id}")
     return id
-
 
 def delete_project(row):
     id = int(row['id'])

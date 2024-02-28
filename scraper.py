@@ -20,6 +20,9 @@ def load_csv():
     df = pd.read_csv(CSV_FNAME, dtype={
         'external_link':'string',
         'name': 'string',
+        'shortName': 'string',
+        'categories': 'string',
+        'description': 'string',
         'image': 'string',
         'min_investment': 'string',
         'id': 'float64',
