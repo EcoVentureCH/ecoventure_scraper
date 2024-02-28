@@ -82,6 +82,20 @@ def list_projects(df):
     print()
     hint_publish()
 
+def add_all_projects(df):
+    for index, row in df.iterrows():
+        if row['published'] == False:
+            df.loc[index, 'published'] = True
+            print(f"INFO: marked project {index} for publishing.")
+    return df
+
+def remove_all_projects(df):
+    for index, row in df.iterrows():
+        if row['published'] == True:
+            df.loc[index, 'published'] = False
+            print(f"INFO: marked project {index} for removal.")
+    return df
+
 def add_project(id_here, df):
     for index, row in df.iterrows():
         if index == id_here:
@@ -91,6 +105,7 @@ def add_project(id_here, df):
                 exit(1)
             else:
                 df.loc[id_here, 'published'] = True
+                print(f"INFO: marked project {id_here} for publishing.")
                 return df
     else:
         assert False, 'unreachable'
@@ -104,6 +119,7 @@ def remove_project(id_here, df):
                 exit(1)
             else:
                 df.loc[id_here, 'published'] = False
+                print(f"INFO: marked project {id_here} for removal.")
                 return df
     else:
         assert False, 'unreachable'
@@ -167,16 +183,17 @@ def subc_add(args):
         print("ERROR: ID was not provided for 'add' Command")
         exit(1)
 
+    if len(args) == 1 and args[0] == '--all':
+        df = add_all_projects(df)
+        df.to_csv(CSV_FNAME, index=False)
+        return
+
     ids = parse_ids_from_args(args, valid_ids)
     for id in ids:
         df = add_project(id, df)
 
     df.to_csv(CSV_FNAME, index=False)
 
-    if len(ids) == 1:
-        print(f"INFO: marked project {ids[0]} for publishing.")
-    else:
-        print(f"INFO: marked projects {ids} for publishing.")
 
 def subc_remove(args):
     df = load_csv()
@@ -187,16 +204,16 @@ def subc_remove(args):
         print("ERROR: ID was not provided for 'remove' Command")
         exit(1)
 
+    if len(args) == 1 and args[0] == '--all':
+        df = remove_all_projects(df)
+        df.to_csv(CSV_FNAME, index=False)
+        return
+
     ids = parse_ids_from_args(args, valid_ids)
     for id in ids:
         df = remove_project(id, df)
 
     df.to_csv(CSV_FNAME, index=False)
-
-    if len(ids) == 1:
-        print(f"INFO: marked project {ids[0]} for removal.")
-    else:
-        print(f"INFO: marked projects {ids} for removal.")
 
 
 ### CLI Subcommands
@@ -206,8 +223,8 @@ available_subcommands = [
     Subcommand('stop', 'stops the scraper', run=subc_stop),
     Subcommand('status', 'check if the scraper is running', run=subc_status),
     Subcommand('list', 'lists all projects and their state', run=subc_list),
-    Subcommand('add', 'mark project[s] as active', run=subc_add, signature='<id> [<id> ...]'),
-    Subcommand('remove', 'mark project[s] as inactive', run=subc_remove, signature='<id> [<id> ...]'),
+    Subcommand('add', 'mark project[s] as active', run=subc_add, signature='<id> [<id> ...] | --all'),
+    Subcommand('remove', 'mark project[s] as inactive', run=subc_remove, signature='<id> [<id> ...] | --all'),
     Subcommand('publish', 'apply del/add-ed to website', run=subc_publish),
     Subcommand('help', 'display help message', run=subc_help),
 ]
