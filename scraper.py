@@ -44,33 +44,41 @@ def stop():
 
 '''csv interaction'''
 def list_projects(df):
-    print('Listing all projects')
-    print('   ID    - published - ext_id - last accessed                - link')
+    separator = '  '
+    header_id_name = '<id>'
+    columns_to_print = {
+        'published': '<published>',
+        'id': '<WP id>',
+        'lastUpdate': '<last modified>',
+        'shortName': '<short name>',
+        'external_link': '<external link>',
+    }
+
+    print()
+    print('Listing all projects:')
+    offsets = [max(len(df), len(header_id_name))]
+    for name, header_print in columns_to_print.items():
+        series = df[name]
+        l = max(len(header_print), max(series.apply('{}'.format).apply(len)))
+        offsets.append(l)
+
+    header_formated = [header_id_name.ljust(offsets[0])] + [head.ljust(l) for l, head in zip(offsets[1:], columns_to_print.values())]
+    print(separator.join(header_formated))
+        
     for index, row in df.iterrows():
-        if not pd.isnull(row['id']):
-            id = int(row['id'])
-        else:
-            id = '     '
-        lu = row['lastUpdate']
-        lu = lu if not pd.isnull(lu) else '                          '
-        link = row['external_link']
+        color = fmt_orange
+        if row['published'] == False and pd.isnull(row['id']):
+            color = fmt_red
+        if row['published'] == True and not pd.isnull(row['id']):
+            color = fmt_green
+    
+        justified_and_colored = [color.format(f'{index}'.ljust(offsets[0]))]  
+        for i, field in enumerate(columns_to_print.keys()):
+            colored = color.format(f'{row[field]}'.ljust(offsets[i+1]))
+            justified_and_colored.append(colored)
 
-        if row['published'] == False or pd.isnull(row['published']):
-            if pd.isnull(row['id']):
-                id_here = fmt_red.format(index)
-                publ = fmt_red.format('no     ')
-            else:
-                id_here = fmt_orange.format(index)
-                publ = fmt_orange.format('remove ')
-        else:
-            if pd.isnull(row['id']):
-                id_here = fmt_orange.format(index)
-                publ = fmt_orange.format('add    ')
-            else:
-                id_here = fmt_green.format(index)
-                publ = fmt_green.format('yes    ')
+        print(separator.join(justified_and_colored))
 
-        print(f"   {id_here}     - {publ}   - {id}  - {lu}   - {link}")
     print()
     hint_publish()
 
@@ -100,22 +108,119 @@ def remove_project(id_here, df):
     else:
         assert False, 'unreachable'
 
+### CLI Subcommands bindings
 
+class Subcommand:
+    def __init__(self, name, description, run, signature = '') -> None:
+        self.name = name
+        self.run = run
+        self.description = description
+        self.signature = signature
+
+def subc_help(args):
+    print_description()
+    print_usage()
+
+def subc_start(args):
+    if len(args) == 0:
+        print(f"ERROR: <seconds> was not provided for start Command")
+        exit(1)
+    elif len(args) == 1:
+        seconds = args[0]
+        try:
+            seconds = int(seconds)
+        except ValueError:
+            print("ERROR: <seconds> needs to be an integer")
+            exit(1)
+
+    else:
+        print("ERROR: too many arguments for 'start' Command")
+        exit(1)
+
+    start(seconds)
+
+def subc_status(args):
+    from src.scraper_daemon import get_pid
+    pid = get_pid()
+    if pid >= 0:
+        print(f"INFO: status: daemon running PID={pid}")
+    else:
+        print(f"INFO: status: daemon not runnning")
+
+def subc_stop(args):
+    stop()
+
+def subc_list(args):
+    df = load_csv()
+    list_projects(df)
+
+def subc_publish(args):
+    upload_images()
+    update_projects()
+
+def subc_add(args):
+    df = load_csv()
+    valid_ids = list(range(len(df)))
+
+    if len(args) == 0:
+        print_usage()
+        print("ERROR: ID was not provided for 'add' Command")
+        exit(1)
+
+    ids = parse_ids_from_args(args, valid_ids)
+    for id in ids:
+        df = add_project(id, df)
+
+    df.to_csv(CSV_FNAME, index=False)
+
+    if len(ids) == 1:
+        print(f"INFO: marked project {ids[0]} for publishing.")
+    else:
+        print(f"INFO: marked projects {ids} for publishing.")
+
+def subc_remove(args):
+    df = load_csv()
+    valid_ids = list(range(len(df)))
+
+    if len(args) == 0:
+        print_usage()
+        print("ERROR: ID was not provided for 'remove' Command")
+        exit(1)
+
+    ids = parse_ids_from_args(args, valid_ids)
+    for id in ids:
+        df = remove_project(id, df)
+
+    df.to_csv(CSV_FNAME, index=False)
+
+    if len(ids) == 1:
+        print(f"INFO: marked project {ids[0]} for removal.")
+    else:
+        print(f"INFO: marked projects {ids} for removal.")
+
+
+### CLI Subcommands
+
+available_subcommands = [
+    Subcommand('start', 'starts the scraper (runs every <seconds> seconds)', run=subc_start, signature='<seconds>'),
+    Subcommand('stop', 'stops the scraper', run=subc_stop),
+    Subcommand('status', 'check if the scraper is running', run=subc_status),
+    Subcommand('list', 'lists all projects and their state', run=subc_list),
+    Subcommand('add', 'mark project[s] as active', run=subc_add, signature='<id> [<id> ...]'),
+    Subcommand('remove', 'mark project[s] as inactive', run=subc_remove, signature='<id> [<id> ...]'),
+    Subcommand('publish', 'apply del/add-ed to website', run=subc_publish),
+    Subcommand('help', 'display help message', run=subc_help),
+]
 
 if __name__ == "__main__":
 
-    '''Handle command line arguments'''
-
-    def shift(args):
-        return args[0], args[1:]
-
     args = sys.argv
-    program_name, args = shift(args)
+    program_name, *args = args
 
     def error_no_csv():
         print( "Hint: to start the scraper call")
         print(f"   {program_name} start SECONDS")
-        print( "ERROR: no projects found")
+        print( "ERROR: conda.csv not found")
 
     def hint_publish(): 
         changes = fmt_orange.format('changes')
@@ -130,17 +235,13 @@ if __name__ == "__main__":
 
     def print_usage():
         print( "Usage:")
-        print(f"  {program_name} Command [...]")
+        print(f"   {program_name} <subcommand> [...]")
         print()
-        print( "Commands:")
-        print( "  start <SECONDS>        - starts the scraper (runs every <SECONDS> seconds)")
-        print( "  stop                   - stops the scraper")
-        print( "  status                 - check if the scraper is running")
-        print( "  list                   - lists all projects and their state")
-        print( "  add    <ID> [<ID>...]  - mark project[s] as active")
-        print( "  remove <ID> [<ID>...]  - mark project[s] as inactive")
-        print( "  publish                - apply del/add-ed to website")
-        print( "  --help                 - display help message")
+        print( "subcommands:")
+        left_width = max([len(f'{subc.name} {subc.signature}') for subc in available_subcommands])
+        for subc in available_subcommands:
+            command_str = f'{subc.name} {subc.signature}'.ljust(left_width)
+            print(f"    {command_str} - {subc.description}")
         print()
 
     def parse_ids_from_args(args, valid_ids):
@@ -151,7 +252,7 @@ if __name__ == "__main__":
             except ValueError:
                 print( "IDs Available:")
                 print(f"    {ids}")
-                print(f"ERROR: ID {arg} needs to be an integer")
+                print(f"ERROR: <id> {arg} needs to be an integer")
                 exit(1)
             if id not in valid_ids:
                 if len(ids) > 0:
@@ -159,109 +260,31 @@ if __name__ == "__main__":
                     print(f"    {program_name} list")
                     print( "IDs Available:")
                     print(f"    {ids}")
-                    print(f"ERROR: project with ID {id} not found")
+                    print(f"ERROR: project with <id> {id} not found")
                     exit(0)
                 else:
                     assert False
             ids.append(id)
         return ids
 
-
-
     if len(args) == 0:
         print_description()
         print_usage()
         print( "ERROR: No Command was provided")
 
-
     elif 10 > len(args) > 0:
-        command, args = shift(args)
+        command, *args = args
         command = command.lower()
-        if command == "--help":
-            print_description()
-            print_usage()
-        elif command == "start":
-            if len(args) == 0:
-                print("ERROR: <SECONDS> was not provided for 'start' Command")
-                exit(1)
-            elif len(args) == 1:
-                seconds, _ = shift(args)
-                try:
-                    seconds = int(seconds)
-                except ValueError:
-                    print("ERROR: <SECONDS> needs to be an integer")
-                    exit(1)
-            else:
-                print("ERROR: too many arguments for 'start' Command")
-                exit(1)
 
-            start(seconds)
+        available_subcommands_dict = {sc.name: sc for sc in available_subcommands}
 
-        elif command == 'status':
-            from src.scraper_daemon import get_pid
-            pid = get_pid()
-            if pid >= 0:
-                print(f"INFO: status: daemon running PID={pid}")
-            else:
-                print(f"INFO: status: daemon not runnning")
-
-
-        elif command == "stop":
-            stop()
-
-        elif command == "list":
-            df = load_csv()
-            list_projects(df)
-
-        elif command == 'publish':
-            upload_images()
-            update_projects()
-
-        elif command == "add":
-            df = load_csv()
-            valid_ids = list(range(len(df)))
-
-            if len(args) == 0:
-                print_usage()
-                print("ERROR: ID was not provided for 'add' Command")
-                exit(1)
-
-            ids = parse_ids_from_args(args, valid_ids)
-            for id in ids:
-                df = add_project(id, df)
-
-            df.to_csv(CSV_FNAME, index=False)
-            if len(ids) == 1:
-                print(f"INFO: marked project {ids[0]} for publishing.")
-            else:
-                print(f"INFO: marked projects {ids} for publishing.")
-
-        elif command == "remove":
-            df = load_csv()
-            valid_ids = list(range(len(df)))
-
-            if len(args) == 0:
-                print_usage()
-                print("ERROR: ID was not provided for 'remove' Command")
-                exit(1)
-
-            ids = parse_ids_from_args(args, valid_ids)
-            for id in ids:
-                df = remove_project(id, df)
-
-            df.to_csv(CSV_FNAME, index=False)
-            if len(ids) == 1:
-                print(f"INFO: marked project {ids[0]} for removal.")
-            else:
-                print(f"INFO: marked projects {ids} for removal.")
-
-
-        else:
+        if command not in available_subcommands_dict.keys():
             print_usage()
             print(f"ERROR: unknown Command '{command}'")
+            exit(1)
+
+        available_subcommands_dict[command].run(args)
 
     else:
         print_usage()
         print("ERROR: too many arguments")
-
-    
