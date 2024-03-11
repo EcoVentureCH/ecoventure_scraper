@@ -9,7 +9,7 @@ import pandas as pd
 from src.updateProducts import update_projects
 from src.uploadImages import upload_images
 
-CSV_FNAME = 'conda.csv'
+CSV_FNAME = 'projects.csv'
 
 def load_csv():
 
@@ -237,7 +237,7 @@ if __name__ == "__main__":
     def error_no_csv():
         print( "Hint: to start the scraper call")
         print(f"   {program_name} start SECONDS")
-        print( "ERROR: conda.csv not found")
+        print(f"ERROR: {CSV_FNAME} not found")
 
     def hint_publish(): 
         changes = fmt_orange.format('changes')

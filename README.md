@@ -1,6 +1,6 @@
 # Scraper
 
-A scraper that runs in an interval and saves everything in a global csv.
+A scraper that runs in an interval and saves everything in a global csv named projects.csv.
 
 ## Usage
 run the scraper every 3 minutes

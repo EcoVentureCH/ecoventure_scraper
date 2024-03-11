@@ -18,7 +18,7 @@ from src.utils import print_flushed as print
 
 
 URL = 'https://www.conda.ch/projekte-entdecken/'
-CSV_FNAME = 'conda.csv'
+CSV_FNAME = 'projects.csv'
 ATTRIBUTE_TIMEOUT = 3
 
 # attr_name : (css selector, html attribute | re.comile('..'))

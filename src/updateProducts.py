@@ -7,8 +7,9 @@ from src.utils import print_flushed as print
 
 # current working directory of this file
 current_directory = os.getcwd()
-csv_file_name = "conda.csv"
+csv_file_name = "projects.csv"
 csv_file_path = os.path.join(current_directory, csv_file_name) # Create the full path to the CSV file
+
 keyPath = os.path.join(current_directory, "keys.csv") # Create the full path to the CSV file
 keys = pd.read_csv(keyPath)
 
@@ -117,14 +118,11 @@ def delete_project(row):
 
 
 def delete_inactive_projects():
-    csv_file_name = "conda.csv" # Specify the CSV file name
-    csv_file_path = os.path.join(current_directory, csv_file_name) # Create the full path to the CSV file
     df = pd.read_csv(csv_file_path)
 
     for index, row in df.iterrows():
         if pd.isnull(row['published']):
             delete_project(row['id'])
-
 
 
 if __name__ == "__main__":

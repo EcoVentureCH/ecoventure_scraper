@@ -10,7 +10,7 @@ current_directory = os.getcwd()
 keyPath = os.path.join(current_directory, "keys.csv") # Create the full path to the CSV file
 keys = pd.read_csv(keyPath)
 
-csv_file_name = "conda.csv" # Specify the CSV file name
+csv_file_name = "projects.csv" # Specify the CSV file name
 csv_file_path = os.path.join(current_directory, csv_file_name) # Create the full path to the CSV file
 
 def upload_images():
