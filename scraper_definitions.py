@@ -22,6 +22,8 @@ scraper definitions:
 import time
 import re
 
+from selenium.webdriver.common.by import By
+
 import src.scraper_api as sc
 from src.utils import print_flushed as print
 
