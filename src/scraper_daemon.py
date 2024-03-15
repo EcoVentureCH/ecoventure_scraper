@@ -5,9 +5,17 @@ import time
 import os
 
 from src.utils import print_with_color as print_c
-from src.scraper_conda_ch import URL, scraper_start
-from src.updateProducts import update_projects
-from src.uploadImages import upload_images
+
+import src.scraper_api as sc
+
+from src.csv_manager import update_csv
+
+from src.wc_projects import update_projects
+from src.wc_images import upload_images
+
+
+from inspect import getmembers, isfunction
+
 
 WEBSITE = "https://www.ecoventure.ch"
 LOG_FILE = "log.txt"
@@ -19,16 +27,23 @@ def soft_exit(signum, frame):
 signal.signal(signal.SIGTERM, soft_exit)
 
 def scrape_and_upload(seconds):
-
     print_c('INFO: running scrape_and_upload() function')
-    with scraper_start(log_out=LOG_FILE) as scraper:
 
+    import scraper_definitions as sd
+    scraper_functions = getmembers(sd, isfunction)
+
+    with sc.scraper_context(log_out=LOG_FILE):
         print("INFO: started webdriver")
         while True:
-            print(f"INFO: scraping '{URL}' ")
             
             start_time = time.time()
-            scraper.run()
+
+            # run scrapers
+            for name, func in scraper_functions:
+                print(f"INFO: running scraper named `{name}`. ")
+                project_datas = func()
+                update_csv(project_datas)
+
             return_code = 1
             duration = time.time() - start_time
             print(f'INFO: scraper finished in {duration} seconds')
@@ -111,8 +126,6 @@ def get_pid():
         if check_pid(pid):
             return pid
     return -1
-
-
 
 
 if __name__ == "__main__":

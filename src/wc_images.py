@@ -1,10 +1,9 @@
 import os
 import pandas as pd
-from src.helperFunctions import downloadImage
-from src.helperFunctions import imageToBinary
-from src.helperFunctions import uploadImageAPI
+from src.wc_helper_functions import downloadImage
+from src.wc_helper_functions import imageToBinary
+from src.wc_helper_functions import uploadImageAPI
 from src.utils import print_flushed as print
-
 
 current_directory = os.getcwd()
 keyPath = os.path.join(current_directory, "keys.csv") # Create the full path to the CSV file
