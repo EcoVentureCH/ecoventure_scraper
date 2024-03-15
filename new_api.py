@@ -1,28 +1,3 @@
-'''
-    Find new projects.
-    have necessary fields.
-    have optional fields.
-
-    either take inner Html (+ process it)
-    or     take an attrib  (+ process it)
-
-    processing type includes:
-        date
-        price (euro, chf, etc..)
-        string (lower, upper, camel, strip, regex)
-        url (image, normal)
-
-    =========================
-
-    maybe do follow links not needed (for faster scraping and less complexity)
-    click accept cookies (maybe a never consent addon?)
-
-    selenium functionalities:
-        click until
-        is element there
-        iterate element xpath
-        elem by id
-'''
 import re
 import time
 
@@ -66,6 +41,7 @@ def sc_accept_cookies(selenium_by_pair):
     except exceptions.ElementNotInteractableException as e:
         print("WARNING: cookies accept thing not Interactable")
     except:
+        print("WARNING: no cookie thingi")
         pass
 
 def sc_click_through(selenium_by_pair):
@@ -141,7 +117,6 @@ def number_from_class(bfs, tag, classname, prop = 'class'):
 def text_from_class(bfs, tag, classname, prop = 'class', key = None):
 
     elem = bfs.find_all(tag, {prop: classname})
-    print(elem)
 
     if key == None:
         return elem[0].get_text()
@@ -211,60 +186,19 @@ def seedrs():
     regex_projects_urls = r'<a href="(/\w+)">'
     project_urls = re.findall(regex_projects_urls, html_project_page, re.MULTILINE)
 
-    print(project_urls)
-
     for url in project_urls:
         url = 'https://www.seedrs.com' + url
         sc_open_tab(url)
-
         html = sc_get_html()
 
+        print(f'extracting data from {url}')
         data = sc_extract_all(data_to_extract, html)
-
         print(data)
-
-        break
 
         sc_close_tab()
 
-#conda()
-seedrs()
 
 
-
-
-
-'''
-
-[
-    {
-        'url' : 'https://www.conda.ch/projekte-entdecken/'
-        'init' : lambda driver: None # cookies +  click through 'campaigns_load_more_btn'
-        'project_xpath' :
-            '/html/body/main/div/article/div/div/div[2]/div/div[1]/div/div/div[1]/div[{}]/div/a',
-        'data_fields' :
-        [  # usually innerHTML, sometimes regex needed
-            'title'      : '/html/body/main/section[2]/div/div/div[1]/div[2]/h3',
-            'min_invest' : '/html/body/main/section[4]/div[2]/div/div/div[1]/div[2]/div[2]/div[1]/p[1]',
-            'cur_invest' : '/html/body/main/section[4]/div[2]/div/div/div[1]/div[2]/div[1]/div/div/div/div/div/p[1]',
-            'goal'       : '/html/body/main/section[4]/div[2]/div/div/div[1]/div[2]/div[2]/div[2]/p[1]',
-            'end_date'   : '/html/body/main/section[4]/div[2]/div/div/div[1]/div[1]', # field data-end
-        ]
-    },
-
-    {
-        'url' : 'https://www.ecocrowd.de/',
-        'init' : lambda x: None,
-        'project_xpath':
-            '/html/body/div[1]/div[3]/div[1]/div[2]/div[2]/div/div/div[{}]/article/a',
-        'data_fields':
-        [ # all need regex
-            'title': '/html/body/div[1]/div/div[1]/div/article/header/h1', # needs regex
-            'time_remaining': '/html/body/div[1]/div/div[1]/div/article/div/div/div[1]/div[2]/ul/li[4]/p', # needs regex
-            'goal' : '/html/body/div[1]/div/div[1]/div/article/div/div/div[1]/div[2]/ul/li[3]/p', #
-            'cur_invest': '/html/body/div[1]/div/div[1]/div/article/div/div/div[1]/div[2]/ul/li[2]/p' #
-        ]
-    }
-]
-
-'''
+if __name__ == "__main__":
+    #conda()
+    seedrs()
