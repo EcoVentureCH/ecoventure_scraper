@@ -112,7 +112,11 @@ def sc_extract_all(data_to_extract: dict, html: str):
 
 def number_from_class(bfs, tag, classname, prop = 'class'):
     text = bfs.find_all(tag, {prop: classname})[0].get_text()
-    return re.findall(r'\d+[\.\,]?\d*', text)[0]
+    matches = re.findall(r'\d+[\.\,]?\d*', text)
+    if len(matches) > 0:
+        return matches[0]
+    print("WARNING: didn't match any number in {},{},{}".format(tag, classname, prop))
+    return None
 
 def text_from_class(bfs, tag, classname, prop = 'class', key = None):
 
