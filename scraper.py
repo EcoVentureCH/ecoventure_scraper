@@ -2,36 +2,22 @@
 import os
 import sys
 from sys import exit
-from src.utils import print_with_color as print
-from src.utils import fmt_red, fmt_green, fmt_orange
 import pandas as pd
 
 from src.wc_projects import update_projects
 from src.wc_images import upload_images
 
-CSV_FNAME = 'projects.csv'
+from src.utils import log_c as print
+from src.utils import fmt_red, fmt_green, fmt_orange
+
+from src.csv_manager import CSV_FNAME, CSV_COLUMNS
 
 def load_csv():
-
     if not os.path.exists(CSV_FNAME):
         error_no_csv()
         exit(1)
 
-    df = pd.read_csv(CSV_FNAME, dtype={
-        'external_link': 'string',
-        'published': 'bool',
-#        'verified': 'bool',
-        'name': 'string',
-        'shortName': 'string',
-        'categories': 'string',
-        'description': 'string',
-        'image': 'string',
-        'min_investment': 'string',
-        'id': 'float64',
-        'lastUpdate': 'str',
-        'wpImageLink': 'str',
-        'wpImageID': 'float64'
-    })
+    df = pd.read_csv(CSV_FNAME, dtype=CSV_COLUMNS)
     return df
 
 '''daemon interaction'''

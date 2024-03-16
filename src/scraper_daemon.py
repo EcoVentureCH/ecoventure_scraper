@@ -3,19 +3,13 @@ import signal
 import sys
 import time
 import os
-
-from src.utils import print_with_color as print_c
-
-import src.scraper_api as sc
-
-from src.csv_manager import update_csv
-
-from src.wc_projects import update_projects
-from src.wc_images import upload_images
-
-
 from inspect import getmembers, isfunction
 
+from src.utils import log_c, log
+import src.scraper_api as sc
+from src.csv_manager import update_csv
+from src.wc_projects import update_projects
+from src.wc_images import upload_images
 
 WEBSITE = "https://www.ecoventure.ch"
 LOG_FILE = "log.txt"
@@ -27,49 +21,55 @@ def soft_exit(signum, frame):
 signal.signal(signal.SIGTERM, soft_exit)
 
 def scrape_and_upload(seconds):
-    print_c('INFO: running scrape_and_upload() function')
+    log_c('INFO: running scrape_and_upload() function')
 
     import scraper_definitions as sd
     scraper_functions = getmembers(sd, isfunction)
 
     with sc.scraper_context(log_out=LOG_FILE):
-        print("INFO: started webdriver")
+        log("INFO: started webdriver")
         while True:
             
             start_time = time.time()
 
             # run scrapers
             for name, func in scraper_functions:
-                print(f"INFO: running scraper named `{name}`. ")
+                if name[0] == '_':
+                    log(f"INFO: skipping scraper named `{name}` (_ disabled). ")
+                    continue
+                log(f"INFO: running scraper named `{name}`. ")
                 project_datas = func()
                 update_csv(project_datas)
 
             return_code = 1
             duration = time.time() - start_time
-            print(f'INFO: scraper finished in {duration} seconds')
-            print()
+            log(f'INFO: scraper finished in {duration} seconds')
+            log()
 
             start_time_upload = time.time()
 
-            try:
-                print("INFO: start udpating projectss")
-                update_projects()
-                print("INFO: start uploading images")
-                upload_images()
+            # for now don't upload but just update csv
+            # TODO: implement updateble fields
+            if False:
+                try:
+                    log("INFO: start udpating projectss")
+                    update_projects()
+                    log("INFO: start uploading images")
+                    upload_images()
 
-            except FileNotFoundError as e:
-                print(e)
-                print(f"WARNING: couldn't upload to {WEBSITE}")
+                except FileNotFoundError as e:
+                    log(e)
+                    log(f"WARNING: couldn't upload to {WEBSITE}")
 
-            else:
-                duration = time.time() - start_time_upload
-                print(f"INFO: uploaded changes to {WEBSITE} took {duration} sec")
+                else:
+                    duration = time.time() - start_time_upload
+                    log(f"INFO: uploaded changes to {WEBSITE} took {duration} sec")
 
             duration = time.time() - start_time
             remaining_sleep_timer = max(seconds - duration, 0)
 
-            print(f'INFO: next scrape job in {remaining_sleep_timer/60:.1f} min')
-            print()
+            log(f'INFO: next scrape job in {remaining_sleep_timer/60:.1f} min')
+            log()
 
             time.sleep(remaining_sleep_timer)
 
@@ -77,7 +77,7 @@ def scrape_and_upload(seconds):
 def detached(*args):
     pid =  os.fork()
     if pid != 0:
-        print_c(f"INFO: daemon started with PID: {pid}")
+        log_c(f"INFO: daemon started with PID: {pid}")
         with open(DAEMON_STATE_FILE, "w") as f:
             f.write(str(pid))
         return
@@ -94,7 +94,7 @@ def restart_daemon(seconds=1):
 
 def stop_daemon():
     if not os.path.exists(DAEMON_STATE_FILE):
-        print_c(f"INFO: daeomon not running")
+        log_c(f"INFO: daeomon not running")
         return
     
     with open(DAEMON_STATE_FILE, 'r') as f:
@@ -102,9 +102,9 @@ def stop_daemon():
 
     try:
         os.kill(pid, signal.SIGTERM)
-        print_c(f"INFO: killed daemon with PID: {pid}")
+        log_c(f"INFO: killed daemon with PID: {pid}")
     except ProcessLookupError:
-        print_c(f"INFO: did not find daemon with PID: {pid}")
+        log_c(f"INFO: did not find daemon with PID: {pid}")
         pass
 
     os.remove(DAEMON_STATE_FILE)

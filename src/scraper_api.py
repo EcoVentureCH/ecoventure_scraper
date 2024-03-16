@@ -20,6 +20,8 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 
+from src.utils import log_c, log
+
 
 # global state
 driver = None
@@ -49,7 +51,7 @@ class scraper_context:
     def __enter__(self):
         global driver
         if self.log_out is not None:
-            print(f'INFO: entered scraper_context - all stdout will now be printed to {self.log_out}')
+            log_c(f'INFO: entered scraper_context - all stdout will now be printed to {self.log_out}')
             sys.stdout.flush()
             self._stdout = sys.stdout
             self._stderr = sys.stderr
@@ -59,7 +61,7 @@ class scraper_context:
         self.service = Service(ChromeDriverManager().install(), log_output='chrome_log.txt')
         self.driver = webdriver.Chrome(service=self.service,
                                        options=self.crome_options)
-        print('INFO: started chrome driver')
+        log('INFO: started chrome driver')
         driver = self.driver
         return self
 
@@ -72,7 +74,7 @@ class scraper_context:
             sys.stderr.flush()
 
         self.driver.quit()
-        print('INFO: exited scraper_context!')
+        log('INFO: exited scraper_context!')
 
 _open = open
 
@@ -89,16 +91,16 @@ def accept_cookies(selenium_by_pair):
         accept_btn.click()
 
     except exceptions.ElementNotInteractableException as e:
-        print("WARNING: cookies accept thing not Interactable")
+        log("WARNING: cookies accept thing not Interactable")
     except:
-        print("WARNING: no cookie thingi")
+        log("WARNING: no cookie thingi")
         pass
 
 def click_through(selenium_by_pair):
     max_clicks = 10
     timeout = 1
 
-    print('INFO: clicking through: ', end='')
+    log('INFO: clicking through: ', end='')
     for i in range(max_clicks):
         try:
             element = WebDriverWait(driver, timeout).until(
@@ -110,8 +112,8 @@ def click_through(selenium_by_pair):
         driver.execute_script("arguments[0].scrollIntoView();", element)
         element.click()
 
-        print('.', end=' ')
-    print()
+        log('.', end=' ')
+    log()
 
 def scroll_down(n_pixels = 2000):
     driver.execute_script(f"window.scrollBy(0,{n_pixels})", "");
@@ -124,7 +126,7 @@ def open_tab(url):
     global opened_tab
 
     if opened_tab:
-        print("WARNING: can only have one tab open! closing old one!")
+        log("WARNING: can only have one tab open! closing old one!")
         close_tab()
 
     driver.execute_script(f'window.open("{url}");')
@@ -139,7 +141,7 @@ def close_tab():
         driver.switch_to.window(driver.window_handles[0])
         opened_tab = False
     else:
-        print("WARNING: cannot close tab, because it was never opened")
+        log("WARNING: cannot close tab, because it was never opened")
 
 def extract_attribute(function_or_regex, html):
     if callable(function_or_regex):
@@ -148,7 +150,7 @@ def extract_attribute(function_or_regex, html):
     result = re.findall(function_or_regex, html)
     if len(result) > 0:
         return result[0]
-    print(f"WARNING: regex didn't match html: '{function_or_regex}'")
+    log(f"WARNING: regex didn't match html: '{function_or_regex}'")
     return None
 
 # data_to_extract:
@@ -163,7 +165,7 @@ def extract_all(data_to_extract: dict, html: str):
     return result
 
 def scrape_projects(data_to_extract, project_urls):
-    print(f'INFO: got {len(project_urls)} projects.')
+    log(f'INFO: got {len(project_urls)} projects.')
 
     project_datas = []
     for i, url in enumerate(project_urls):
@@ -171,7 +173,7 @@ def scrape_projects(data_to_extract, project_urls):
         html = get_html()
         data = extract_all(data_to_extract, html)
         project_datas.append(data)
-        print(f'INFO: extracted project {i+1}/{len(project_urls)}.')
+        log(f'INFO: extracted project {i+1}/{len(project_urls)}.')
         close_tab()
 
     return project_datas
@@ -181,7 +183,7 @@ def number_from_class(bfs, tag, classname, prop = 'class'):
     found = bfs.find_all(tag, {prop: classname})
 
     if len(found) < 1:
-        print("WARNING: didn't find {},{},{}".format(tag, classname, prop))
+        log("WARNING: didn't find {},{},{}".format(tag, classname, prop))
         return None
 
     text = found[0].get_text()
@@ -189,7 +191,7 @@ def number_from_class(bfs, tag, classname, prop = 'class'):
 
     if len(matches) > 0:
         return matches[0]
-    print("WARNING: didn't match any number in {},{},{}".format(tag, classname, prop))
+    log("WARNING: didn't match any number in {},{},{}".format(tag, classname, prop))
     return None
 
 def text_from_class(bfs, tag, classname, prop = 'class', key = None):

@@ -1,7 +1,8 @@
 .DS_Store
 ._*
 __pycache__
-conda.csv
+projects.csv
 keys.csv
 log.txt
+chrome_log.txt
 .daemon_state

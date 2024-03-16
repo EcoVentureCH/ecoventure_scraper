@@ -16,6 +16,8 @@ scraper definitions:
     each function in this file is imported by the scraper_daemon
     and executed regularly.
 
+    to disable: rename `function` to `_function`
+
     see scraper_api for useful functions (not documented yet!)
 '''
 
@@ -45,11 +47,12 @@ def conda():
     sc.click_through((By.ID, "campaigns_load_more_btn"))
 
     html_project_page = sc.get_html()
-    regex_projects_urls = r"<a\W+href=\"(https://www\.conda\.ch/.*?)\"\W+target=\".*?class=\".*?\">"
-    project_urls = re.findall(regex_projects_urls, html_project_page, re.MULTILINE)
+    regex_projects_urls = r'<a href="(https://www\.conda\.ch/.*?)".*?class="i-btn i-btn-secondary text-uppercase">'
 
+    # TODO: check if all urls are valid!
+    # handle error in sc.scrape_projecsts later
+    project_urls = re.findall(regex_projects_urls, html_project_page, re.MULTILINE)
     project_datas = sc.scrape_projects(data_to_extract, project_urls)
-    print(f"INFO: `{url}` has {len(project_datas)} entries")
 
     return project_datas
 
@@ -67,7 +70,6 @@ def seedrs():
 
     url = 'https://www.seedrs.com/invest/raising-now'
 
-
     sc.open(url)
     sc.scroll_down(40000)
     time.sleep(1)
@@ -77,12 +79,10 @@ def seedrs():
     regex_projects_urls = r'<a href="(/\w+)">'
     project_urls = re.findall(regex_projects_urls, html_project_page, re.MULTILINE)
     project_urls = ['https://www.seedrs.com' + url for url in project_urls]
+
     project_datas = sc.scrape_projects(data_to_extract, project_urls)
 
-    print(f"INFO: `{url}` has {len(project_datas)} entries")
-
     return project_datas
-
 
 
 if __name__ == "__main__":

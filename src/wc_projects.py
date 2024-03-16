@@ -1,6 +1,7 @@
 from woocommerce import API
 import os
 import pandas as pd
+import math
 
 from datetime import datetime
 from src.utils import print_flushed as print
@@ -49,14 +50,19 @@ def update_projects():
 
         # remove projects from website
         if not pd.isnull(row['id']) and not row["published"]:
-            delete_project(row)
+            ok = delete_project(row)
+            if not ok:
+                continue
+
             df.at[index, 'id'] = None
             df['lastUpdate'] = df['lastUpdate'].astype(str)
             df.at[index, 'lastUpdate'] = str(datetime.now())
 
         # only create product if there is no ID yet and published set
         if pd.isnull(row['id']) and row["published"]: 
-            id = create_project(row)
+            id, ok = create_project(row)
+            if not ok:
+                continue
             df.at[index, 'id'] = id
             df['lastUpdate'] = df['lastUpdate'].astype(str)
             df.at[index, 'lastUpdate'] = str(datetime.now())
@@ -77,24 +83,26 @@ def returnCategories(row):
     return filteredCat
 
 def create_project(row):
+
+    min_inv = row["min_investment"]
+    if min_inv:
+        min_inv = 'N/A'
+
     # Access values of each column for the current row
     data = {
         "name": row["name"],
-        "meta_data": [
-            {
-            "key": "wpneo_funding_minimum_price",
-            "value": row["min_investment"]
-            },
-            {
-            "key": "krowd_project_link",
-            "value" : row['external_link']
-            }
-        ],
+        "meta_data": [{
+                "key": "wpneo_funding_minimum_price",
+                "value": min_inv
+            }, {
+                "key": "krowd_project_link",
+                "value" : row["external_link"]
+            }],
         "type": "crowdfunding",
-        "images": [
-            {"src": row["wpImageLink"],
-            "id": float(row["wpImageID"])}
-        ]
+        "images": [{
+                "src": row["wpImageLink"],
+                "id": float(row["wpImageID"])
+            }]
     }
     # appends additional information if exists (description, shortName, category)
     if pd.notna(row['description']) and row['description']:
@@ -106,15 +114,31 @@ def create_project(row):
 
     # upload
     update = wcapi.post("products" , data).json()
-    id = update['id']
-    print(f"INFO: new project added. ID: {id}")
-    return id
+
+    if 'code' in update:
+        print(f'ERROR: didn\'t upload project with name `{data["name"]}`')
+        print(f"ERROR: we got:        ", update)
+        print(f"ERROR: data we sent:  ", data)
+        return 0, False
+
+    if 'id' in update:
+        id = update['id']
+        print(f"INFO: new project added. ID: {id}")
+        return id, True
+
+    raise Exception('unreachable')
 
 def delete_project(row):
     id = int(row['id'])
     assert(id is not None)
     response = wcapi.delete(f"products/{id}", params={"force": True}).json()
-    print(f"INFO: project deleted. ID: {id}")
+
+    if 'id' in response:
+        print(f"INFO: project deleted. ID: {id}")
+        return True
+
+    print(f"ERROR: couldn't delete project with ID {id}")
+    return False
 
 
 def delete_inactive_projects():
