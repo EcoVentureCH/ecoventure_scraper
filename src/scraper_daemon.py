@@ -49,7 +49,7 @@ def scrape_and_upload(seconds):
             start_time_upload = time.time()
 
             # for now don't upload but just update csv
-            # TODO: implement updateble fields
+            # TODO(#18): implement updateble fields
             if False:
                 try:
                     log("INFO: start udpating projectss")
