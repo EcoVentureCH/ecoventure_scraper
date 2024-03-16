@@ -178,7 +178,7 @@ def scrape_projects(data_to_extract, project_urls):
 
 
 def number_from_class(bfs, tag, classname, prop = 'class'):
-    text = bfs.find_all(tag, {prop: classname})
+    found = bfs.find_all(tag, {prop: classname})
 
     if len(found) < 1:
         print("WARNING: didn't find {},{},{}".format(tag, classname, prop))
