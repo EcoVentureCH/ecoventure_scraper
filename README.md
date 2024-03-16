@@ -43,5 +43,5 @@ sudo apt --fix-broken -y install
 
 install other dependencies with pip3 globally
 ```shell
-pip3 install pandas selenium webdriver-manager woocommerce pillow
+pip3 install pandas selenium webdriver-manager woocommerce pillow beautifulsoup4
 ```
