@@ -13,7 +13,7 @@ CSV_FNAME = 'projects.csv'
 CSV_COLUMNS = {
     'external_link': 'string',
     'published': 'bool',
-    ## TODO: implement verfied
+    ## TODO(#16): implement verfied
     #'verified': 'bool',
     'name': 'string',
     'shortName': 'string',
