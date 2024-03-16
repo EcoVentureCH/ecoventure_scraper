@@ -178,8 +178,15 @@ def scrape_projects(data_to_extract, project_urls):
 
 
 def number_from_class(bfs, tag, classname, prop = 'class'):
-    text = bfs.find_all(tag, {prop: classname})[0].get_text()
+    text = bfs.find_all(tag, {prop: classname})
+
+    if len(found) < 1:
+        print("WARNING: didn't find {},{},{}".format(tag, classname, prop))
+        return None
+
+    text = found[0].get_text()
     matches = re.findall(r'\d+[\.\,]?\d*', text)
+
     if len(matches) > 0:
         return matches[0]
     print("WARNING: didn't match any number in {},{},{}".format(tag, classname, prop))
