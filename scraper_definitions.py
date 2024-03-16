@@ -49,7 +49,7 @@ def conda():
     html_project_page = sc.get_html()
     regex_projects_urls = r'<a href="(https://www\.conda\.ch/.*?)".*?class="i-btn i-btn-secondary text-uppercase">'
 
-    # TODO: check if all urls are valid!
+    # TODO(#15): check if all urls are valid!
     # handle error in sc.scrape_projecsts later
     project_urls = re.findall(regex_projects_urls, html_project_page, re.MULTILINE)
     project_datas = sc.scrape_projects(data_to_extract, project_urls)
