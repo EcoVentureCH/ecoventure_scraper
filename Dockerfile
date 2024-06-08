@@ -7,6 +7,6 @@ USER root
 RUN wget https://bootstrap.pypa.io/get-pip.py
 RUN python3 get-pip.py
 RUN python3 -m pip install selenium
-RUN python3 -m pip install beautifulsoup4 webdriver-manager
+RUN python3 -m pip install beautifulsoup4 webdriver-manager pandas
 
-ENTRYPOINT ["python3", "/usr/scrapp/run_all.py"]
+ENTRYPOINT ["python3", "/usr/scrapp/run_all.py", "/usr/scrapp_volume/"]

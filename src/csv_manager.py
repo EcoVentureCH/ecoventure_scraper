@@ -4,12 +4,14 @@ import math
 
 from src.utils import log
 
+#
+# Default Values:
+#
 
-# Only these will update
-UPDATABLE = ['name', 'image', 'min_investment']
-
+# where the csv lives
 CSV_FNAME = 'projects.csv'
 
+# the columns that exist in the csv
 CSV_COLUMNS = {
     'external_link': 'string',
     'published': 'bool',
@@ -23,33 +25,37 @@ CSV_COLUMNS = {
     'min_investment': 'string',
     'id': 'float64',
     'lastUpdate': 'str',
-    'wpImageLink': 'str',
-    'wpImageID': 'float64'
 }
 
-def default_value(col):
-    if CSV_COLUMNS[col] == 'string' or CSV_COLUMNS[col] == 'str':
+# Only these will update
+HOT_RELOADABLE = ['name', 'image', 'min_investment']
+
+# get the default value for a given column
+def default_value(col, avail_columns=CSV_COLUMNS):
+    if avail_columns[col] == 'string' or avail_columns[col] == 'str':
         return ''
-    elif CSV_COLUMNS[col] == 'bool':
+    elif avail_columns[col] == 'bool':
         return False
-    elif CSV_COLUMNS[col] == 'float64' or CSV_COLUMNS[col] == 'float':
+    elif avail_columns[col] == 'float64' or avail_columns[col] == 'float':
         return math.nan
-    raise Exception(f"default value for dtype `{CSV_COLUMNS[col]}` of column `{col}` not imlemented!")
+    raise Exception(f"default value for dtype `{avail_columns[col]}` of column `{col}` not imlemented!")
 
-def update_csv(projects_data):
+# update the csv if anything changed. only hot_reloadble columns will get updated. returns True if csv changed.
+def update_csv(projects_data, csv_filename=CSV_FNAME, hot_reloadable=HOT_RELOADABLE, csv_available_columns=CSV_COLUMNS):
 
-    log(f'INFO: writing entries to {CSV_FNAME}')
+    dirty = False # will be dirty if anything changed, so we can later write the file if dirty.
 
-    if os.path.exists(CSV_FNAME):
-        df = pd.read_csv(CSV_FNAME)
+    if os.path.exists(csv_filename):
+        df = pd.read_csv(csv_filename)
     else:
-        df = pd.DataFrame(columns=list(CSV_COLUMNS.keys()))
+        # we create the csv, because it doesn't exist
+        dirty = True
+        df = pd.DataFrame(columns=list(csv_available_columns.keys()))
         for attributes in projects_data:
             row = [(col, [attributes[col]]) if col in attributes else
-                   (col, [default_value(col)]) for col, typ in CSV_COLUMNS.items()]
+                   (col, [default_value(col, csv_available_columns)]) for col, typ in csv_available_columns.items()]
             row = dict(row)
             df = pd.concat([df, pd.DataFrame(row)], ignore_index=True)
-
 
     links = df['external_link']
     for attributes in projects_data:
@@ -59,15 +65,22 @@ def update_csv(projects_data):
 
             # make sure only one row is there
             assert(len(rows)==1)
-            for key in UPDATABLE:
-                df.loc[select_row, key] = attributes[key]
+            for key in hot_reloadable:
+                if (df.loc[select_row, key] != attributes[key]).all():
+                    dirty = True
+                    df.loc[select_row, key] = attributes[key]
 
         else: # new one!
-
+            dirty = True
             row = [(col, [attributes[col]]) if col in attributes else
-                   (col, [default_value(col)]) for col, typ in CSV_COLUMNS.items()]
+                   (col, [default_value(col, csv_available_columns)]) for col, typ in csv_available_columns.items()]
             row = dict(row)
             df = pd.concat([df, pd.DataFrame(row)], ignore_index=True)
 
-    df.to_csv(CSV_FNAME, index=False)
+    if dirty:
+        log("INFO: updated entries in {}.".format(csv_filename))
+        df.to_csv(csv_filename, index=False)
+    else:
+        log("INFO: nothing new.. {} is already up to date.".format(csv_filename))
 
+    return dirty

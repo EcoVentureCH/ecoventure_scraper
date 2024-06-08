@@ -3,14 +3,20 @@
 Build docker container including selenium
 
 ```console
-docker build -t scrapp .
+docker build -t scraper .
 ```
 
-Run once in docker container, just runs through all websites and prints it for now.
+Run 'scrape_all.py' in docker container and stores the csv on the volume 'scraper_volume'
 
 ```console
-docker run -it scrapp
+docker volume create scraper_volume
+docker run -it --mount source=scraper_volume,target=/usr/scrapp_volume scraper
 ```
+
+TODO: download the image if it changed or not existent and store on volume
+TODO: notify ecoventure_ch somehow OR make ecoventure_ch periodically check if csv changed.
+TODO: periodically scrape all
+TODO: implement error handling in scraper_api
 
 # Scraper (OLD - TO BE MOVED)
 
