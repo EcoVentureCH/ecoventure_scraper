@@ -1,4 +1,18 @@
-# Scraper
+# ecoventure_scraper
+
+Build docker container including selenium
+
+```console
+docker build -t scrapp .
+```
+
+Run once in docker container, just runs through all websites and prints it for now.
+
+```console
+docker run -it scrapp
+```
+
+# Scraper (OLD - TO BE MOVED)
 
 A scraper that runs in an interval and saves everything in a global csv named projects.csv. in scraper_definitions.py every function that is defined will be run as a scraper. For now there is conda() and seedrs().
 

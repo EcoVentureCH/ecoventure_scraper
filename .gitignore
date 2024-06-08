@@ -3,6 +3,7 @@
 __pycache__
 projects.csv
 keys.csv
-log.txt
+*log.txt
 chrome_log.txt
 .daemon_state
+*.deb
