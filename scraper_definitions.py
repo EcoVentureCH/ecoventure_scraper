@@ -75,6 +75,7 @@ def seedrs():
     time.sleep(1)
 
     html_project_page = sc.get_html()
+    
 
     regex_projects_urls = r'<a href="(/\w+)">'
     project_urls = re.findall(regex_projects_urls, html_project_page, re.MULTILINE)
@@ -85,7 +86,57 @@ def seedrs():
     return project_datas
 
 
+def republic():
+    data_to_extract = {
+        'name':           lambda bfs: sc.text_from_class(bfs, 'h1', 'h2 favourite'),
+        'external_link':  lambda bfs: sc.text_from_class(bfs, 'meta', 'og:url', 'property', key='content'),
+        'image':          lambda bfs: sc.text_from_class(bfs, 'meta', 'og:image', 'property', key='content'),
+        'min_investment': lambda bfs: sc.number_from_class(bfs, 'tr', 'share-price'),
+        'funding_target': lambda bfs: sc.number_from_class(bfs, 'div', 'investment_total_target'),
+        'progress':       lambda bfs: sc.number_from_class(bfs, 'div', 'CampaignProgress-text')
+    }
+    
+    print('republic test start')
+    
+    url = 'https://republic.com/companies'
+    
+    sc.open(url)
+    
+    
+    sc.scroll_down(40000)
+    time.sleep(1)
+    sc.scroll_down(40000)
+    time.sleep(1)
+    
+    
+    html_project_page = sc.get_html()
+    
+    print(html_project_page)
+    regex_projects_urls = r'<a href=\"(.+)\" itemscope>'
+    
+    print('Number of projects:' + str(len(re.findall(regex_projects_urls, html_project_page, re.MULTILINE))))
+    
+    project_urls = re.findall(regex_projects_urls, html_project_page, re.MULTILINE)
+    project_urls = ['https://republic.com' + url for url in project_urls]
+    
+    for i in range(0, len(project_urls)):
+        print(project_urls[i])
+    
+    print('republic after getting project urls')    
+    
+    project_datas = sc.scrape_projects(data_to_extract, project_urls)
+    
+    print('republic after scraping projects')
+    
+    return project_datas
+    
+    
+    
+
+
+
 if __name__ == "__main__":
     with sc.scraper_context():
         conda()
         seedrs()
+        #republic()
