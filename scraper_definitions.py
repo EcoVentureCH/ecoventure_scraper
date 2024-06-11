@@ -76,13 +76,20 @@ def seedrs():
 
     html_project_page = sc.get_html()
     
+    
+    print("seedrs test start")
+    print(html_project_page)
+    
+    
 
     regex_projects_urls = r'<a href="(/\w+)">'
     project_urls = re.findall(regex_projects_urls, html_project_page, re.MULTILINE)
     project_urls = ['https://www.seedrs.com' + url for url in project_urls]
 
     project_datas = sc.scrape_projects(data_to_extract, project_urls)
-
+    print("seedrs test end")
+    
+    
     return project_datas
 
 
@@ -110,9 +117,13 @@ def republic():
     
     
     html_project_page = sc.get_html()
+    time.sleep(1)
+    
+    html_project_page = sc.get_html()
     
     print(html_project_page)
     regex_projects_urls = r'<a href=\"(.+)\" itemscope>'
+     #r'<p\s+class=["\']OfferingCardContent-module__title___DrRba["\']\s+itemProp=["\']name["\']>([^<]+)<\/p>' #r'<a href=\"(.+)\" itemscope>'
     
     print('Number of projects:' + str(len(re.findall(regex_projects_urls, html_project_page, re.MULTILINE))))
     
@@ -133,10 +144,28 @@ def republic():
     
     
 
+def econeers():
+    data_to_extract = {
+        'name':           lambda bfs: sc.text_from_class(bfs, 'h1', 'h2 favourite'),
+        'external_link':  lambda bfs: sc.text_from_class(bfs, 'meta', 'og:url', 'property', key='content'),
+        'image':          lambda bfs: sc.text_from_class(bfs, 'meta', 'og:image', 'property', key='content'),
+        'min_investment': lambda bfs: sc.number_from_class(bfs, 'tr', 'share-price'),
+        'funding_target': lambda bfs: sc.number_from_class(bfs, 'div', 'investment_total_target'),
+        'progress':       lambda bfs: sc.number_from_class(bfs, 'div', 'CampaignProgress-text')
+    
+    }
+    
+    print('econeers start')
+    url = 'https://www.econeers.de/#aktuelle-investmentchancen'
+    
+    sc.open(url)
+
+    html_project_page = sc.get_html()
+    regex_projects_urls = r'<a href="(/projekte/.*?)">'
 
 
 if __name__ == "__main__":
     with sc.scraper_context():
-        conda()
+        #conda()
         seedrs()
-        #republic()
+        republic()
