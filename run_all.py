@@ -31,4 +31,4 @@ with sc.scraper_context(log_out=None, debug=False):
             continue
         manager.update_csv(project_datas, csv_filename=csv_filename)
 
-#time.sleep(100000)
+time.sleep(60 * 7)
