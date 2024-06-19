@@ -6,13 +6,14 @@ import src.csv_manager as manager
 
 from inspect import getmembers, isfunction
 
+time_out_after_job = 7 * 60 # in seconds
 csv_filename = "projects.csv"
 
+# first commandline argument is the base path where the data is stored
+# if not provided, the base path is where this file is.
 if len(sys.argv) > 1:
-    # (most likely) used to call from docker
-    volume = sys.argv[1]
-    print("Volume to scrape stuff to is: ", volume)
-    csv_filename = volume + "/" + csv_filename
+    base_path = sys.argv[1]
+    csv_filename = base_path + "/" + csv_filename
 
 print("Using csv filename:", csv_filename)
 
@@ -31,4 +32,4 @@ with sc.scraper_context(log_out=None, debug=False):
             continue
         manager.update_csv(project_datas, csv_filename=csv_filename)
 
-time.sleep(60 * 7)
+time.sleep(time_out_after_job)
