@@ -39,8 +39,8 @@ def conda():
         'funding_current':      lambda bfs: sc.number_from_class(bfs, 'p', 'min-investment'),
         'funding_min':          r"Mindestinvestition:\W+CHF\W+(.*?)\.-",
         'funding_target':       lambda bfs: sc.number_from_class(bfs, 'p', 'total-amount'),
-        'description':          r"<p class=\"text-white large italic text-shadow-dark\">.*?</p>",
-        'description_short':    r"<p class=\"text-white large italic text-shadow-dark\">.*?</p>",
+        'description':          r"<p class=\"text-white large italic text-shadow-dark\">(.*?)</p>",
+        'description_short':    r"<p class=\"text-white large italic text-shadow-dark\">(.*?)</p>",
         'location':             lambda _: "Switzerland",
     }
 
