@@ -13,22 +13,23 @@ CSV_FNAME = 'projects.csv'
 
 # the columns that exist in the csv
 CSV_COLUMNS = {
-    'external_link': 'string',
-    'published': 'bool',
-    ## TODO(#16): implement verfied
-    #'verified': 'bool',
-    'name': 'string',
-    'shortName': 'string',
-    'categories': 'string',
-    'description': 'string',
-    'image': 'string',
-    'min_investment': 'string',
-    'id': 'float64',
-    'lastUpdate': 'str',
+    'name':                 'string',
+    'name_short':           'string',
+    'external_link':        'string',
+    'external_image_link':  'string',
+    'funding_min':          'string',
+    'funding_target':       'string',
+    'funding_current':      'string',
+    'location':             'string',
+    'description':          'string',
+    'description_short':    'string',
+    'id':                   'float64',
 }
 
 # Only these will update
-HOT_RELOADABLE = ['name', 'image', 'min_investment']
+HOT_RELOADABLE = [
+    'funding_current'
+]
 
 # get the default value for a given column
 def default_value(col, avail_columns=CSV_COLUMNS):
