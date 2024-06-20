@@ -21,10 +21,10 @@ CSV_COLUMNS = {
     'funding_target':       'string',
     'funding_current':      'string',
     'location':             'string',
-    'curency':              'string',
+    'currency':             'string',
     'description':          'string',
     'description_short':    'string',
-    'id':                   'float64',
+    'id':                   'string',
 }
 
 # Only these will update
