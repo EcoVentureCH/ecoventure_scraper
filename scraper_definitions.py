@@ -41,7 +41,6 @@ def conda():
         'funding_target':       lambda bfs: sc.number_from_class(bfs, 'p', 'total-amount'),
         'description':          r"<p class=\"text-white large italic text-shadow-dark\">(.*?)</p>",
         'description_short':    r"<p class=\"text-white large italic text-shadow-dark\">(.*?)</p>",
-        'location':             lambda _: "Switzerland",
     }
 
     url = 'https://www.conda.ch/projekte-entdecken/'
@@ -57,6 +56,11 @@ def conda():
     # handle error in sc.scrape_projecsts later
     project_urls = re.findall(regex_projects_urls, html_project_page, re.MULTILINE)
     project_datas = sc.scrape_projects(data_to_extract, project_urls)
+
+    # set location and currency for all projects
+    for i in range(len(project_datas)):
+        project_datas[i]['location'] = "Switzerland"
+        project_datas[i]['currency'] = "CHF"
 
     return project_datas
 
@@ -91,8 +95,12 @@ def seedrs_raising():
     project_urls = ['https://www.seedrs.com' + url for url in project_urls]
 
     project_datas = sc.scrape_projects(data_to_extract, project_urls)
-    print("seedrs test end")
-    
+
+    # set currency to GBP for all projects
+    # TODO: replace with scraping the currency - should not be very difficult...
+    for i in range(len(project_datas)):
+        project_datas[i]['currency'] = "GBP"
+
     return project_datas
 
 if __name__ == "__main__":

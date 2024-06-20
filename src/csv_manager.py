@@ -21,6 +21,7 @@ CSV_COLUMNS = {
     'funding_target':       'string',
     'funding_current':      'string',
     'location':             'string',
+    'curency':              'string',
     'description':          'string',
     'description_short':    'string',
     'id':                   'float64',
