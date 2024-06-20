@@ -130,7 +130,7 @@ def open_tab(url):
         log("WARNING: can only have one tab open! closing old one!")
         close_tab()
 
-    driver.execute_script(f'window.open("{url}");')
+    driver.execute_script('window.open(arguments[0], "_blank");', url)
     driver.switch_to.window(driver.window_handles[1])
     opened_tab = True
     time.sleep(2.5)

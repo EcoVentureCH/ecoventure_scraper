@@ -17,6 +17,7 @@ scraper definitions:
     see scraper_api for useful functions (not documented yet!)
 
 '''
+import logging
 
 import time
 import re
@@ -68,6 +69,7 @@ def conda():
 
     return project_datas
 
+'''
 
 def seedrs_raising():
 
@@ -105,6 +107,71 @@ def seedrs_raising():
     for i in range(len(project_datas)):
         project_datas[i]['currency'] = "GBP"
 
+    return project_datas
+    
+    
+    
+
+def econeers():
+    def text_from_class(bfs, tag, class_name):
+        try:
+            element = bfs.find(tag, class_=class_name)
+            if element:
+                return element.get_text(strip=True)
+            else:
+                print('element not found')
+                return None
+            
+        except AttributeError:
+            return None
+
+    def text_from_meta(bfs, tag, attr, value, key='content'):
+        print(bfs.find_all(tag, {attr: value}))
+        try:
+            return bfs.find_all(tag, {attr: value})
+        except (AttributeError, TypeError):
+            print("Error finding text from meta")
+            return None
+
+    def number_from_class(bfs, tag, class_name):
+        try:
+            text = bfs.find_all(tag, class_=class_name).get_text(strip=True)
+            return int(re.sub(r'[^\d]', '', text))
+        except (AttributeError, ValueError):
+            print("Error finding number from class")
+            return None
+        
+ 
+
+    data_to_extract = {
+        #'name': lambda bfs: sc.text_from_class(bfs, 'meta',   'og:description', 'property', key='content'),
+        'external_link':  lambda bfs: sc.text_from_class(bfs, 'meta',  'og:url', 'property', key='content'),
+        'image':  lambda bfs: sc.text_from_class(bfs, 'meta',   'og:image', 'property', key='content'),
+        'min_investment': lambda bfs: number_from_class(bfs, 'td', 'tg-kftd'),
+        'funding_target': lambda bfs: number_from_class(bfs, 'td', 'tg-lqy6'),
+        'progress': lambda bfs: number_from_class(bfs, 'h2', 'center-text')
+    }
+    
+    print('econeers start')
+    url = 'https://www.econeers.de/#aktuelle-investmentchancen'
+    
+    sc.open(url)
+
+    html_project_page = sc.get_html()
+    regex_projects_urls = r'<a (href="https:\/\/www.econeers.de\/investmentchancen\/.*?)"'
+    
+    project_urls = re.findall(regex_projects_urls, html_project_page, re.MULTILINE)
+    project_urls = ['https://www.econeers.de' + url for url in project_urls]
+    
+    print("data to extract")
+    print(data_to_extract)
+    print("project urls")
+    print(project_urls)
+    
+    project_datas = sc.scrape_projects(data_to_extract, project_urls)
+    
+    print("econeers end")
+    
     return project_datas
 
 
