@@ -13,12 +13,9 @@ scraper definitions:
             ...
             ]
 
-    each function in this file is imported by the scraper_daemon
-    and executed regularly.
-
     to disable: rename `function` to `_function`
-
     see scraper_api for useful functions (not documented yet!)
+
 '''
 import logging
 
@@ -33,12 +30,19 @@ from src.utils import print_flushed as print
 
 def conda():
 
+    # TODO: add projects that have 'starting in ... days'
+
     data_to_extract = {
-        'name':           r'<meta\W+property=\"og:title\"\W+content=\"(.*?)\">',
-        'external_link':  r'<meta\W+property=\"og:url\"\W+content=\"(.*?)\">',
-        'image':          r"<meta\W+property=\"og:image\"\W+content=\"(.*?)\">",
-        'min_investment': lambda bfs: sc.number_from_class(bfs, 'p', 'min-investment'),
-        'funding_target': lambda bfs: sc.number_from_class(bfs, 'p', 'total-amount'),
+        'name':                 r'<meta\W+property=\"og:title\"\W+content=\"(.*?)\">',
+        'name_short':           r'<meta\W+property=\"og:title\"\W+content=\"(.*?)\">',
+        'external_link':        r'<meta\W+property=\"og:url\"\W+content=\"(.*?)\">',
+        'external_image_link':  r"<meta\W+property=\"og:image\"\W+content=\"(.*?)\">",
+        #'funding_current':      lambda bfs: sc.currency_comma_means_dot(bfs, 'p', 'min-investment'),
+        'funding_current':      r"<p class=\"conda-knob-value-text\".*?>.*?(\d+[\.\,]?\d*)\W+CHF</p>",
+        'funding_min':          r"Mindestinvestition:\W+CHF\W+(\d*?)\.[\-\d]",
+        'funding_target':       lambda bfs: sc.currency_comma_means_dot(bfs, 'p', 'total-amount'),
+        'description':          r"<p class=\"text-white large italic text-shadow-dark\">(.*?)</p>",
+        'description_short':    r"<p class=\"text-white large italic text-shadow-dark\">(.*?)</p>",
     }
 
     url = 'https://www.conda.ch/projekte-entdecken/'
@@ -55,92 +59,53 @@ def conda():
     project_urls = re.findall(regex_projects_urls, html_project_page, re.MULTILINE)
     project_datas = sc.scrape_projects(data_to_extract, project_urls)
 
+    # set location and currency for all projects
+    for i in range(len(project_datas)):
+        project_datas[i]['location'] = "Switzerland"
+        project_datas[i]['currency'] = "CHF"
+        # THe , and . usage is so confusing on conda.ch....
+        project_datas[i]['funding_current'] = project_datas[i]['funding_current'].replace(".", "")
+
     return project_datas
 
 '''
 
-def seedrs():
+def seedrs_raising():
 
     data_to_extract = {
-        'name':           lambda bfs: sc.text_from_class(bfs, 'h1', 'h2 favourite'),
-        'external_link':  lambda bfs: sc.text_from_class(bfs, 'meta', 'og:url', 'property', key='content'),
-        'image':          lambda bfs: sc.text_from_class(bfs, 'meta', 'og:image', 'property', key='content'),
-        'min_investment': lambda bfs: sc.number_from_class(bfs, 'tr', 'share-price'),
-        'funding_target': lambda bfs: sc.number_from_class(bfs, 'div', 'investment_total_target'),
-        'progress':       lambda bfs: sc.number_from_class(bfs, 'div', 'CampaignProgress-text')
+        'name':                lambda bfs: sc.text_from_class(bfs, 'h1', 'h2 favourite'),
+        'name_short':          lambda bfs: sc.text_from_class(bfs, 'h1', 'h2 favourite'),
+        'external_link':       lambda bfs: sc.text_from_class(bfs, 'meta', 'og:url', 'property', key='content'),
+        'external_image_link': lambda bfs: sc.text_from_class(bfs, 'meta', 'og:image', 'property', key='content'),
+        'funding_min':         lambda bfs: sc.currency_dot_means_dot(bfs, 'span', 'highlights-extra-info'),
+        'funding_target':      lambda bfs: sc.currency_dot_means_dot(bfs, 'div', 'investment_total_target'),
+        'funding_current':     lambda bfs: sc.currency_dot_means_dot(bfs, 'div', 'CampaignProgress-text'),
+        'description_short':   lambda bfs: sc.text_from_class(bfs, 'p', 'summary'),
+        'description':         lambda bfs: sc.text_from_class(bfs, 'p', 'summary'),
+        'location':            lambda bfs: sc.text_from_class(bfs, 'tr', 'location').replace("\n", " "),
     }
 
     url = 'https://www.seedrs.com/invest/raising-now'
 
     sc.open(url)
-    sc.scroll_down(40000)
-    time.sleep(1)
+    for i in range(10):
+        sc.scroll_down(400)
+        time.sleep(1)
+    
 
+    #regex_projects_urls = r'<a href="(/\w+)">'
+    regex_projects_urls = r'<a href=\"(/[a-zA-Z\-\d\_]+?)\">'
     html_project_page = sc.get_html()
-    
-    
-    print("seedrs test start")
- #   print(html_project_page)
-    
-    
-
-    regex_projects_urls = r'<a href="(/\w+)">'
     project_urls = re.findall(regex_projects_urls, html_project_page, re.MULTILINE)
     project_urls = ['https://www.seedrs.com' + url for url in project_urls]
 
     project_datas = sc.scrape_projects(data_to_extract, project_urls)
-    print("seedrs test end")
-    
-    
-    return project_datas
 
-'''
-def republic():
-    data_to_extract = {
-        'name':           lambda bfs: sc.text_from_class(bfs, 'h1', 'h2 favourite'),
-        'external_link':  lambda bfs: sc.text_from_class(bfs, 'meta', 'og:url', 'property', key='content'),
-        'image':          lambda bfs: sc.text_from_class(bfs, 'meta', 'og:image', 'property', key='content'),
-        'min_investment': lambda bfs: sc.number_from_class(bfs, 'div', 's-marginTop0_5 u-textCenter s-fontSize14 u-fontWeight400 u-colorMuted'),
-        'funding_target': lambda bfs: sc.number_from_class(bfs, 'div', 'u-fontWeight600 u-textRight s-marginLeft1 offerings-show-flexible_deal_terms-item__value'),
-        'progress':       lambda bfs: sc.number_from_class(bfs, 'div', 's-marginBottom1_5 s-borderBottom1_5 offerings-show-header-raised_amount')
-    }
-    
-    print('republic test start')
-    
-    url = 'https://republic.com/companies'
-    
-    sc.open(url)
-    
-    
-    sc.scroll_down(40000)
-    time.sleep(1)
-    sc.scroll_down(40000)
-    time.sleep(1)
-    
-    
-    html_project_page = sc.get_html()
-    time.sleep(1)
-    
-    html_project_page = sc.get_html()
-    
-    #print(html_project_page)
-    regex_projects_urls = r'<a href=\"(.+)\" itemscope>'
-     #r'<p\s+class=["\']OfferingCardContent-module__title___DrRba["\']\s+itemProp=["\']name["\']>([^<]+)<\/p>' #r'<a href=\"(.+)\" itemscope>'
-    
-    print('Number of projects:' + str(len(re.findall(regex_projects_urls, html_project_page, re.MULTILINE))))
-    
-    project_urls = re.findall(regex_projects_urls, html_project_page, re.MULTILINE)
-    project_urls = ['https://republic.com' + url for url in project_urls]
-    
-    for i in range(0, len(project_urls)):
-        print(project_urls[i])
-    
-    print('republic after getting project urls')    
-    
-    project_datas = sc.scrape_projects(data_to_extract, project_urls)
-    
-    print('republic after scraping projects')
-    
+    # set currency to GBP for all projects
+    # TODO: replace with scraping the currency - should not be very difficult...
+    for i in range(len(project_datas)):
+        project_datas[i]['currency'] = "GBP"
+
     return project_datas
     
     
@@ -209,8 +174,6 @@ def econeers():
     return project_datas
 
 if __name__ == "__main__":
-    with sc.scraper_context():
-        #conda()
-       # seedrs()
-        #republic()
-        econeers()
+    with sc.scraper_context(debug=False):
+        print(conda())
+        print(seedrs_raising())
