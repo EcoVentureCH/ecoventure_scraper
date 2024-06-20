@@ -36,9 +36,10 @@ def conda():
         'name_short':           r'<meta\W+property=\"og:title\"\W+content=\"(.*?)\">',
         'external_link':        r'<meta\W+property=\"og:url\"\W+content=\"(.*?)\">',
         'external_image_link':  r"<meta\W+property=\"og:image\"\W+content=\"(.*?)\">",
-        'funding_current':      lambda bfs: sc.number_from_class(bfs, 'p', 'min-investment'),
-        'funding_min':          r"Mindestinvestition:\W+CHF\W+(.*?)\.-",
-        'funding_target':       lambda bfs: sc.number_from_class(bfs, 'p', 'total-amount'),
+        #'funding_current':      lambda bfs: sc.currency_comma_means_dot(bfs, 'p', 'min-investment'),
+        'funding_current':      r"<p class=\"conda-knob-value-text\".*?>.*?(\d+[\.\,]?\d*)\W+CHF</p>",
+        'funding_min':          r"Mindestinvestition:\W+CHF\W+(\d*?)\.[\-\d]",
+        'funding_target':       lambda bfs: sc.currency_comma_means_dot(bfs, 'p', 'total-amount'),
         'description':          r"<p class=\"text-white large italic text-shadow-dark\">(.*?)</p>",
         'description_short':    r"<p class=\"text-white large italic text-shadow-dark\">(.*?)</p>",
     }
@@ -61,6 +62,8 @@ def conda():
     for i in range(len(project_datas)):
         project_datas[i]['location'] = "Switzerland"
         project_datas[i]['currency'] = "CHF"
+        # THe , and . usage is so confusing on conda.ch....
+        project_datas[i]['funding_current'] = project_datas[i]['funding_current'].replace(".", "")
 
     return project_datas
 
@@ -72,9 +75,9 @@ def seedrs_raising():
         'name_short':          lambda bfs: sc.text_from_class(bfs, 'h1', 'h2 favourite'),
         'external_link':       lambda bfs: sc.text_from_class(bfs, 'meta', 'og:url', 'property', key='content'),
         'external_image_link': lambda bfs: sc.text_from_class(bfs, 'meta', 'og:image', 'property', key='content'),
-        'funding_min':         lambda bfs: sc.number_from_class(bfs, 'span', 'highlights-extra-info'),
-        'funding_target':      lambda bfs: sc.number_from_class(bfs, 'div', 'investment_total_target'),
-        'funding_current':     lambda bfs: sc.number_from_class(bfs, 'div', 'CampaignProgress-text'),
+        'funding_min':         lambda bfs: sc.currency_dot_means_dot(bfs, 'span', 'highlights-extra-info'),
+        'funding_target':      lambda bfs: sc.currency_dot_means_dot(bfs, 'div', 'investment_total_target'),
+        'funding_current':     lambda bfs: sc.currency_dot_means_dot(bfs, 'div', 'CampaignProgress-text'),
         'description_short':   lambda bfs: sc.text_from_class(bfs, 'p', 'summary'),
         'description':         lambda bfs: sc.text_from_class(bfs, 'p', 'summary'),
         'location':            lambda bfs: sc.text_from_class(bfs, 'tr', 'location').replace("\n", " "),
@@ -104,6 +107,6 @@ def seedrs_raising():
     return project_datas
 
 if __name__ == "__main__":
-    with sc.scraper_context(debug=True):
-        conda()
-        seedrs_raising()
+    with sc.scraper_context(debug=False):
+        print(conda())
+        print(seedrs_raising())

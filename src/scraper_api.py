@@ -188,12 +188,27 @@ def number_from_class(bfs, tag, classname, prop = 'class'):
         return None
 
     text = found[0].get_text()
-    matches = re.findall(r'\d+[\.\,]?\d*', text)
+    matches = re.findall(r'\d+[\.\,]?\d*[\.\,]?\d*[\.\,]?\d*[\.\,]?\d*[\.\,]?\d*[\.\,]?\d*[\.\,]?\d*', text)
 
     if len(matches) > 0:
         return matches[0]
     log("WARNING: didn't match any number in {},{},{}".format(tag, classname, prop))
     return None
+
+#TODO make more rubost currency reading functions that maybe also read in the currency format
+def currency_dot_means_dot(bfs, tag, classname, prop = 'class'):
+    text = number_from_class(bfs, tag, classname, prop)
+    if text == None:
+        return None
+    supposed_float = text.replace(",", "")
+    return supposed_float
+
+def currency_comma_means_dot(bfs, tag, classname, prop = 'class'):
+    text = number_from_class(bfs, tag, classname, prop)
+    if text == None:
+        return None
+    supposed_float = text.replace(".", "").replace(",", ".")
+    return supposed_float
 
 def text_from_class(bfs, tag, classname, prop = 'class', key = None):
     elem = bfs.find_all(tag, {prop: classname})
