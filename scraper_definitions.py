@@ -63,7 +63,8 @@ def conda():
         project_datas[i]['location'] = "Switzerland"
         project_datas[i]['currency'] = "CHF"
         # THe , and . usage is so confusing on conda.ch....
-        project_datas[i]['funding_current'] = project_datas[i]['funding_current'].replace(".", "")
+        if project_datas[i]['funding_current']:
+            project_datas[i]['funding_current'] = project_datas[i]['funding_current'].replace(".", "")
 
     return project_datas
 
@@ -105,6 +106,7 @@ def seedrs_raising():
         project_datas[i]['currency'] = "GBP"
 
     return project_datas
+
 
 if __name__ == "__main__":
     with sc.scraper_context(debug=False):
