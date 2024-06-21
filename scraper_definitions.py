@@ -22,7 +22,7 @@ import re
 
 from selenium.webdriver.common.by import By
 
-from src.field_parsers import parse_amount_and_currency, parse_currency, parse_amount
+import src.field_parsers as fp
 import src.scraper_api as sc
 from src.utils import print_flushed as print
 
@@ -61,11 +61,11 @@ def conda():
     for i in range(len(project_datas)):
         project_datas[i]['location'] = "Switzerland"
 
-        currency = parse_currency(project_datas[i]['funding_min'])
+        currency = fp.parse_currency(project_datas[i]['funding_min'])
         project_datas[i]['currency'] = currency
-        project_datas[i]['funding_min'] = parse_amount(project_datas[i]['funding_min'])
-        project_datas[i]['funding_current'] = parse_amount(project_datas[i]['funding_current'])
-        project_datas[i]['funding_target'] = parse_amount(project_datas[i]['funding_target'])
+        project_datas[i]['funding_min'] = fp.parse_amount(project_datas[i]['funding_min'])
+        project_datas[i]['funding_current'] = fp.parse_amount(project_datas[i]['funding_current'])
+        project_datas[i]['funding_target'] = fp.parse_amount(project_datas[i]['funding_target'])
 
     return project_datas
 
@@ -101,11 +101,11 @@ def seedrs_raising():
     project_datas = sc.scrape_projects(data_to_extract, project_urls)
 
     for i in range(len(project_datas)):
-        currency = parse_currency(project_datas[i]['funding_min'])
+        currency = fp.parse_currency(project_datas[i]['funding_min'])
         project_datas[i]['currency'] = currency
-        project_datas[i]['funding_min'] = parse_amount(project_datas[i]['funding_min'])
-        project_datas[i]['funding_current'] = parse_amount(project_datas[i]['funding_current'].split("from")[0])
-        project_datas[i]['funding_target'] = parse_amount(project_datas[i]['funding_target'])
+        project_datas[i]['funding_min'] = fp.parse_amount(project_datas[i]['funding_min'])
+        project_datas[i]['funding_current'] = fp.parse_amount(project_datas[i]['funding_current'].split("from")[0])
+        project_datas[i]['funding_target'] = fp.parse_amount(project_datas[i]['funding_target'])
 
     return project_datas
     
@@ -153,11 +153,11 @@ def _republic():
     print('republic after scraping projects')
 
     for i in range(len(project_datas)):
-        currency = parse_currency(project_datas[i]['funding_min'])
+        currency = fp.parse_currency(project_datas[i]['funding_min'])
         project_datas[i]['currency'] = currency
-        project_datas[i]['funding_min'] = parse_amount(project_datas[i]['funding_min'])
-        project_datas[i]['funding_current'] = parse_amount(project_datas[i]['funding_current'])
-        project_datas[i]['funding_target'] = parse_amount(project_datas[i]['funding_target'])
+        project_datas[i]['funding_min'] = fp.parse_amount(project_datas[i]['funding_min'])
+        project_datas[i]['funding_current'] = fp.parse_amount(project_datas[i]['funding_current'])
+        project_datas[i]['funding_target'] = fp.parse_amount(project_datas[i]['funding_target'])
 
     
     return project_datas
@@ -195,11 +195,11 @@ def _econeers():
     project_datas = sc.scrape_projects(data_to_extract, project_urls)
         
     for i in range(len(project_datas)):
-        currency = parse_currency(project_datas[i]['funding_min'])
+        currency = fp.parse_currency(project_datas[i]['funding_min'])
         project_datas[i]['currency'] = currency
-        project_datas[i]['funding_min'] = parse_amount(project_datas[i]['funding_min'])
-        project_datas[i]['funding_current'] = parse_amount(project_datas[i]['funding_current'])
-        project_datas[i]['funding_target'] = parse_amount(project_datas[i]['funding_target'])
+        project_datas[i]['funding_min'] = fp.parse_amount(project_datas[i]['funding_min'])
+        project_datas[i]['funding_current'] = fp.parse_amount(project_datas[i]['funding_current'])
+        project_datas[i]['funding_target'] = fp.parse_amount(project_datas[i]['funding_target'])
 
     return project_datas
 
