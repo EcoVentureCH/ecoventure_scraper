@@ -12,6 +12,10 @@ def parse_amount(string):
 
     supposed_amount = re.sub(not_amount_pattern, '', string)
 
+    # dirty fix for seedrs.com
+    if supposed_amount[0] == ".":
+        supposed_amount = supposed_amount[1:]
+
     dot_count = supposed_amount.count(".")
     comma_count = supposed_amount.count(",")
     
@@ -87,6 +91,7 @@ if __name__ == "__main__":
         ("£450,001", 450001, "GBP"),
         ("£3.07", 3.07, "GBP"),
         ("£21.49", 21.49, "GBP"),
+        ("min. £21.49 +", 21.49, "GBP"),
         ("£50,000,122,122.00", 50000122122.00, "GBP"),
         ("3.192.250 EUR", 3192250, "EUR"),
         ("500 Euro", 500, "EUR"),
