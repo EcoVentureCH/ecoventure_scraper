@@ -107,7 +107,10 @@ def seedrs_raising():
         project_datas[i]['currency'] = "GBP"
 
     return project_datas
-    
+
+
+
+
     
     
 
