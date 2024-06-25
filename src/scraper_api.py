@@ -150,6 +150,10 @@ def extract_attribute(function_or_regex, html):
         return result
     result = re.findall(function_or_regex, html)
     if len(result) > 0:
+        # TODO: debug stuff here.. remove in release build..
+        if len(result) > 1:
+            if len(result[0]) != len(result[1]) or (len(result[0]) == len(result[1]) and result[0] != result[1]):
+                print(f"WARNIG: got more than one match ({len(result)}), matched {result}. taking first one..")
         return result[0]
     log(f"WARNING: regex didn't match html: '{function_or_regex}'")
     return None
@@ -210,8 +214,21 @@ def currency_comma_means_dot(bfs, tag, classname, prop = 'class'):
     supposed_float = text.replace(".", "").replace(",", ".")
     return supposed_float
 
+
 def text_from_class(bfs, tag, classname, prop = 'class', key = None):
     elem = bfs.find_all(tag, {prop: classname})
+    if len(elem) == 0:
+        return "https://commons.wikimedia.org/wiki/File:Rickrolling_QR_code.png"
     if key == None:
         return elem[0].get_text()
     return elem[0][key]
+
+
+
+
+# might be useful regex from https://stackoverflow.com/questions/354044/what-is-the-best-u-s-currency-regex
+
+# re_currency_amount_us = r"[+-]?[0-9]{1,3}(?:,?[0-9]{3})*\.[0-9]{2}"
+# re_currency_amount_us_cents_opt =  r"[+-]?[0-9]{1,3}(?:,?[0-9]{3})*(?:\.[0-9]{2})?"
+# re_currency_amount_us_and_eu =  r"[+-]?[0-9]{1,3}(?:[0-9]*(?:[.,][0-9]{2})?|(?:,[0-9]{3})*(?:\.[0-9]{2})?|(?:\.[0-9]{3})*(?:,[0-9]{2})?)"
+
