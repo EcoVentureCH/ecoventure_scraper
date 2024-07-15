@@ -5,6 +5,9 @@ not_amount_pattern = re.compile(r'[^0-9\,\.\-]+')
 not_digits_pattern = re.compile(r'[^0-9]+')
 
 def parse_amount(string):
+    if not string:
+        return -1
+    
     digits = re.sub(not_digits_pattern, '', string)
     
     if len(digits) == 0:

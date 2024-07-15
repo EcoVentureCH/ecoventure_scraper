@@ -167,19 +167,30 @@ def _econeers():
 
     url = 'https://www.econeers.de/#aktuelle-investmentchancen'
 
+
+    # regex
+    # ,"sum":(.*?),"investors":.*?,"salesChannel":"","salesChannelSum":0,"status":"current","fundingPreStarts":.*?,"fundingPreEnded":.*?,"fundingStarts":.*?,"fundingWillEnd":.*?,"fundingEnded":.*?,"investmentContract":.*?,"flag":.*?,"link":(.*?),"imgSrc":(.*?),"origin":.*?,"goal":(.*?),"threshold":(.*?),"related":
+
+    def find_descr(bfs):
+        found = bfs.find_all('div', {'class' : "funding-description-container"})
+        if len(found) > 0 :
+            return found[0].string
+        return "No Description"
+
     data_to_extract = {
         #'name': lambda bfs: sc.text_from_class(bfs, 'meta',   'og:description', 'property', key='content'),
-        'name':                lambda _: "Test Name",
-        'name_short':          lambda _: "Test Name Short",
-        'description':         lambda _: "Long Long Description",
+        'name':                lambda bfs: bfs.find('title').string,
+        'name_short':          lambda bfs: bfs.find('title').string,
+        'description':         find_descr,
         'description_short':   lambda _: "Descr short",
-        'location':            lambda _: "it",
-        'external_link':       lambda bfs: sc.text_from_class(bfs, 'meta',  'og:url', 'property', key='content'),
-        'external_image_link': lambda bfs: sc.text_from_class(bfs, 'meta',   'og:image', 'property', key='content'),
-        'funding_min':         lambda bfs: sc.text_from_class(bfs, 'td', 'tg-kftd'),
-        'funding_target':      lambda bfs: sc.text_from_class(bfs, 'td', 'tg-lqy6'),
-        'funding_current':     lambda bfs: sc.text_from_class(bfs, 'h2', 'center-text')
+        'location':            lambda _: "de",
+        'external_link':       r',"link":("https://www\.econeers\.de/investmentchancen/.*?),',
+        'external_image_link': r',"imgSrc":"(.*?(?:\.jpg|\.png|\.jpeg))",',
+        'funding_min':         lambda _: "1",
+        'funding_target':      r',"goal":(.*?),',
+        'funding_current':     r',"sum":(.*?),',
     }
+
         
     sc.open(url)
     
@@ -195,7 +206,7 @@ def _econeers():
     project_datas = sc.scrape_projects(data_to_extract, project_urls)
         
     for i in range(len(project_datas)):
-        currency = fp.parse_currency(project_datas[i]['funding_min'])
+        currency = "EUR" #fp.parse_currency(project_datas[i]['funding_min'])
         project_datas[i]['currency'] = currency
         project_datas[i]['funding_min'] = fp.parse_amount(project_datas[i]['funding_min'])
         project_datas[i]['funding_current'] = fp.parse_amount(project_datas[i]['funding_current'])
@@ -213,8 +224,7 @@ if __name__ == "__main__":
 
 
 # TODO: from Yannic, add useful parts of this to api later if needed..
-'''
-    def text_from_class(bfs, tag, class_name):
+''' def text_from_class(bfs, tag, class_name):
         try:
             element = bfs.find(tag, class_=class_name)
             if element:
