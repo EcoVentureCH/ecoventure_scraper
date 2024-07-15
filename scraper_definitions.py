@@ -162,8 +162,7 @@ def _republic():
     
     return project_datas
     
-# disabled for now (_ disables it!)
-def _econeers():
+def econeers():
 
     url = 'https://www.econeers.de/#aktuelle-investmentchancen'
 
@@ -220,7 +219,7 @@ if __name__ == "__main__":
         #print(conda())
         #print(seedrs_raising())
         #print(_republic())
-        print(_econeers())
+        print(econeers())
 
 
 # TODO: from Yannic, add useful parts of this to api later if needed..
