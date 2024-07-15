@@ -173,7 +173,7 @@ def econeers():
     def find_descr(bfs):
         found = bfs.find_all('div', {'class' : "funding-description-container"})
         if len(found) > 0 :
-            return found[0].string
+            return found[0].string + "."
         return "No Description"
 
     data_to_extract = {
@@ -181,9 +181,9 @@ def econeers():
         'name':                lambda bfs: bfs.find('title').string,
         'name_short':          lambda bfs: bfs.find('title').string,
         'description':         find_descr,
-        'description_short':   lambda _: "Descr short",
+        'description_short':   find_descr,
         'location':            lambda _: "de",
-        'external_link':       r',"link":("https://www\.econeers\.de/investmentchancen/.*?),',
+        'external_link':       r',"link":"(https://www\.econeers\.de/investmentchancen/.*?)",',
         'external_image_link': r',"imgSrc":"(.*?(?:\.jpg|\.png|\.jpeg))",',
         'funding_min':         lambda _: "1",
         'funding_target':      r',"goal":(.*?),',
