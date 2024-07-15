@@ -3,6 +3,7 @@ import sys
 import scraper_definitions as sd 
 import src.scraper_api as sc
 import src.csv_manager as manager
+import requests
 
 from inspect import getmembers, isfunction
 
@@ -31,5 +32,12 @@ with sc.scraper_context(log_out=None, debug=False):
             print(f"ERROR: function returned None instead of a dict containing the scraped data.")
             continue
         manager.update_csv(project_datas, csv_filename=csv_filename)
+
+try:
+    response = requests.post('http://web:8000/api/reload-projects')
+    response.raise_for_status()
+    print(f"INFO: reloaded projects successfully: {response.json()}")
+except requests.RequestException as e:
+    print(f"ERROR: Failed to execute command: {e}")
 
 time.sleep(time_out_after_job)
