@@ -173,7 +173,7 @@ def econeers():
     def find_descr(bfs):
         found = bfs.find_all('div', {'class' : "funding-description-container"})
         if len(found) > 0 :
-            return found[0].string + "."
+            return str(found[0].string) + "."
         return "No Description"
 
     data_to_extract = {
