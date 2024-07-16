@@ -210,6 +210,7 @@ def econeers():
         project_datas[i]['funding_min'] = fp.parse_amount(project_datas[i]['funding_min'])
         project_datas[i]['funding_current'] = fp.parse_amount(project_datas[i]['funding_current'])
         project_datas[i]['funding_target'] = fp.parse_amount(project_datas[i]['funding_target'])
+        project_datas[i]['external_link'] = project_urls[i]
 
     return project_datas
 
